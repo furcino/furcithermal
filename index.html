@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seasonal Solar Thermal Storage — Bratislava, Slovakia</title>
+<style>
+  :root{
+    --bg:#0e1420; --bg2:#151d2c; --panel:#1a2334; --line:#2a3purple; --line:#2a364b;
+    --ink:#e8eef7; --ink2:#9db0c9; --ink3:#6d809b;
+    --hot:#ff7043; --warm:#ffb74d; --cold:#4fc3f7; --sun:#ffd54f;
+    --green:#66bb6a; --grid:#223049;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:linear-gradient(180deg,#0b111c,#0e1420 40%);
+    color:var(--ink);
+    font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1500px;margin:0 auto;padding:20px 18px 60px}
+  header.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:6px}
+  h1{font-size:22px;margin:0;letter-spacing:.2px;font-weight:650}
+  .badge{background:var(--panel);border:1px solid var(--line);color:var(--ink2);
+    padding:3px 10px;border-radius:999px;font-size:12.5px;white-space:nowrap}
+  .sub{color:var(--ink3);font-size:13px;margin:2px 0 16px}
+
+  .layout{display:grid;grid-template-columns:308px minmax(0,1fr);gap:16px;align-items:start}
+  @media (max-width:1040px){ .layout{grid-template-columns:1fr} }
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink3);
+    margin:0;padding:13px 15px 0;font-weight:650}
+
+  /* ---- controls ---- */
+  .controls{padding:0 15px 16px}
+  .grp{margin-top:14px}
+  .grp>label{display:block;font-size:12.5px;color:var(--ink2);margin-bottom:5px}
+  .grp>label.rowlbl{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .rowlbl b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+  select,input[type=range]{width:100%}
+  select{background:#101828;color:var(--ink);border:1px solid var(--line);border-radius:9px;
+    padding:8px 9px;font:inherit;font-size:13.5px}
+  select:focus,button:focus-visible{outline:2px solid #3d7dff;outline-offset:1px}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:22px;background:transparent;cursor:pointer}
+  input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:4px;background:#26334a}
+  input[type=range]::-moz-range-track{height:5px;border-radius:4px;background:#26334a}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:#8fd3ff;border:2px solid #0e1420;margin-top:-6px;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#8fd3ff;border:2px solid #0e1420}
+  .seg{display:flex;gap:5px;flex-wrap:wrap}
+  .seg button{flex:1 1 auto;min-width:62px;background:#101828;border:1px solid var(--line);color:var(--ink2);
+    border-radius:8px;padding:7px 4px;font:inherit;font-size:12.5px;cursor:pointer}
+  .seg button[aria-pressed=true]{background:#22406b;border-color:#3d7dff;color:#fff}
+  .note{font-size:11.5px;color:var(--ink3);margin-top:6px;line-height:1.45}
+  .preview{display:flex;align-items:center;gap:10px;margin-top:9px;background:#101828;
+    border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+  .preview svg{flex:0 0 auto}
+  .preview span{font-size:11.5px;color:var(--ink3);line-height:1.4}
+
+  /* ---- scene ---- */
+  .scene{position:relative;overflow:hidden;border-radius:14px}
+  .scene svg.stage{display:block;width:100%;height:auto;background:#0b111c}
+  .transport{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+  .transport button{background:#101828;border:1px solid var(--line);color:var(--ink);border-radius:9px;
+    padding:7px 13px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+  .transport button:hover{border-color:#3d7dff}
+  .transport .date{font-variant-numeric:tabular-nums;font-size:13px;color:var(--ink2);min-width:132px}
+  .transport input[type=range]{flex:1 1 220px;min-width:160px}
+  .spd{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink3)}
+  .spd input{width:96px}
+
+  /* ---- KPIs ---- */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-top:14px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+  .kpi .k{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3)}
+  .kpi .v{font-size:21px;font-weight:650;font-variant-numeric:tabular-nums;margin-top:3px;line-height:1.15}
+  .kpi .u{font-size:11.5px;color:var(--ink3);font-weight:400;margin-left:2px}
+  .kpi .d{font-size:11.5px;color:var(--ink3);margin-top:2px}
+
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  @media (max-width:900px){ .charts{grid-template-columns:1fr} }
+  .chartbox{padding:13px 15px 15px}
+  canvas{width:100%;height:214px;display:block}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink3);margin-top:8px}
+  .legend i{display:inline-block;width:11px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+
+  .warn{margin-top:12px;padding:10px 13px;border-radius:11px;font-size:13px;line-height:1.5;
+    background:#3a2a12;border:1px solid #7a5a1e;color:#ffd9a0}
+  .warn.ok{background:#12301f;border-color:#245c39;color:#a8e6bf}
+  .warn:empty{display:none}
+
+  details.doc{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:0 16px}
+  details.doc summary{cursor:pointer;padding:14px 0;font-size:13px;color:var(--ink2);font-weight:600;list-style:none}
+  details.doc summary::-webkit-details-marker{display:none}
+  details.doc summary::before{content:"▸ ";color:var(--ink3)}
+  details.doc[open] summary::before{content:"▾ "}
+  details.doc .body{padding:0 0 18px;color:var(--ink2);font-size:13.5px;line-height:1.65;max-width:78ch}
+  details.doc h3{font-size:13px;color:var(--ink);margin:18px 0 6px;letter-spacing:.02em}
+  details.doc code{background:#101828;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12.5px}
+  details.doc ul{margin:6px 0;padding-left:20px}
+  details.doc li{margin:3px 0}
+  details.doc table{border-collapse:collapse;width:100%;margin:8px 0;font-size:12.5px}
+  details.doc th,details.doc td{border:1px solid var(--line);padding:5px 8px;text-align:left}
+  details.doc th{color:var(--ink);font-weight:600;background:#101828}
+  a{color:#7fb5ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>Seasonal solar thermal storage</h1>
+  <span class="badge">📍 Bratislava, Slovakia · 48.15 °N, 17.11 °E</span>
+  <span class="badge" id="badgeClass">Energy class A1</span>
+</header>
+<p class="sub">Summer sun is collected, held in a seasonal store, and spent on heating and hot water through the winter.
+   Every number below is simulated from the Bratislava climate — nothing is hard-coded.</p>
+
+<div class="layout">
+
+  <!-- ======================= CONTROLS ======================= -->
+  <section class="card">
+    <h2>Collector field</h2>
+    <div class="controls">
+      <div class="grp">
+        <label for="selCol">Collector type</label>
+        <select id="selCol"></select>
+        <div class="preview"><span id="colPreview"></span><span id="colSpec"></span></div>
+      </div>
+      <div class="grp">
+        <label class="rowlbl"><span>Aperture area</span><b><span id="vArea"></span> m²</b></label>
+        <input type="range" id="rArea" min="2" max="120" step="1">
+      </div>
+      <div class="grp">
+        <label class="rowlbl"><span>Tilt from horizontal</span><b><span id="vTilt"></span>°</b></label>
+        <input type="range" id="rTilt" min="15" max="85" step="1">
+        <div class="note" id="tiltNote"></div>
+      </div>
+    </div>
+
+    <h2>Seasonal store</h2>
+    <div class="controls">
+      <div class="grp">
+        <label for="selSto">Storage concept</label>
+        <select id="selSto"></select>
+        <div class="preview"><span id="stoPreview"></span><span id="stoSpec"></span></div>
+      </div>
+      <div class="grp">
+        <label class="rowlbl"><span>Store volume</span><b><span id="vVol"></span> m³</b></label>
+        <input type="range" id="rVol" min="0" max="1000" step="1">
+        <div class="note" id="volNote"></div>
+      </div>
+    </div>
+
+    <h2>House &amp; demand</h2>
+    <div class="controls">
+      <div class="grp">
+        <label for="selCls">Energy class (Slovak certificate)</label>
+        <select id="selCls"></select>
+        <div class="note" id="clsNote"></div>
+      </div>
+      <div class="grp">
+        <label class="rowlbl"><span>Heated floor area</span><b><span id="vFloor"></span> m²</b></label>
+        <input type="range" id="rFloor" min="70" max="320" step="5">
+      </div>
+      <div class="grp">
+        <label class="rowlbl"><span>Occupants</span><b><span id="vOcc"></span></b></label>
+        <input type="range" id="rOcc" min="1" max="8" step="1">
+      </div>
+      <div class="grp">
+        <label>Backup heat source</label>
+        <div class="seg" id="segBk">
+          <button data-v="gas">Gas boiler</button>
+          <button data-v="el">Electric</button>
+          <button data-v="hp">Heat pump</button>
+          <button data-v="none">None</button>
+        </div>
+        <div class="note" id="bkNote"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= STAGE ======================= -->
+  <div>
+    <section class="card scene">
+      <svg class="stage" id="stage" viewBox="0 0 1200 660" role="img"
+           aria-label="Animated cross-section of a solar thermal system through the seasons">
+        <defs>
+          <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0"   id="skyTop"  stop-color="#1d4f8a"/>
+            <stop offset="0.62" id="skyMid" stop-color="#63a4d8"/>
+            <stop offset="1"   id="skyBot"  stop-color="#cfe4f2"/>
+          </linearGradient>
+          <linearGradient id="gGround" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#5c4632"/><stop offset="1" stop-color="#31251a"/>
+          </linearGradient>
+          <linearGradient id="gStore" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" id="stTop" stop-color="#ff6b3d"/>
+            <stop offset="1" id="stBot" stop-color="#3a7bd5"/>
+          </linearGradient>
+          <radialGradient id="gSun">
+            <stop offset="0" stop-color="#fff8d0"/><stop offset="0.55" stop-color="#ffd54f"/>
+            <stop offset="1" stop-color="#ffb300" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="gRoom">
+            <stop offset="0" stop-color="#ffb066" stop-opacity=".85"/>
+            <stop offset="1" stop-color="#ff8a3d" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="gGlass" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#bfe6ff" stop-opacity=".55"/>
+            <stop offset="0.5" stop-color="#eaf7ff" stop-opacity=".2"/>
+            <stop offset="1" stop-color="#8fc7e8" stop-opacity=".5"/>
+          </linearGradient>
+          <pattern id="pInsul" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="9" height="9" fill="#e8c99a"/><rect width="9" height="4.5" fill="#d9b47e"/>
+          </pattern>
+          <pattern id="pRock" width="26" height="20" patternUnits="userSpaceOnUse">
+            <rect width="26" height="20" fill="#4a3a2a"/>
+            <path d="M2 4h7M13 3h9M5 11h10M19 12h5M2 17h6M12 18h8" stroke="#5d4a36" stroke-width="1.4" fill="none"/>
+          </pattern>
+          <filter id="fGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="fSoft" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3"/>
+          </filter>
+        </defs>
+
+        <!-- sky & ground -->
+        <rect id="sky" x="0" y="0" width="1200" height="430" fill="url(#gSky)"/>
+        <g id="stars" opacity="0"></g>
+        <path id="sunPath" fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="1.6" stroke-dasharray="5 7"/>
+        <g id="sunGrp">
+          <circle id="sunHalo" r="62" fill="url(#gSun)"/>
+          <circle id="sunDisc" r="24" fill="#ffd54f"/>
+        </g>
+        <g id="clouds"></g>
+        <g id="hills"></g>
+        <rect id="ground" x="0" y="430" width="1200" height="230" fill="url(#gGround)"/>
+        <rect id="grass" x="0" y="424" width="1200" height="16" fill="#4f8f3f"/>
+        <rect id="snowLayer" x="0" y="416" width="1200" height="20" fill="#eef6ff" opacity="0"/>
+        <g id="soilLines" opacity=".35"></g>
+        <g id="trees"></g>
+
+        <!-- house (right) -->
+        <g id="houseArt"></g>
+        <!-- storage: underground on the left, or inside the house cutaway -->
+        <g id="storeArt"></g>
+        <!-- pipes -->
+        <g id="pipes" fill="none" stroke-linecap="round"></g>
+        <g id="storeLabelLayer"></g>
+        <!-- collectors on the roof -->
+        <g id="colArt"></g>
+        <!-- weather particles -->
+        <g id="snowfall"></g>
+        <!-- readouts -->
+        <g id="readouts"></g>
+        <!-- season ribbon -->
+        <g id="ribbon"></g>
+      </svg>
+
+      <div class="transport">
+        <button id="btnPlay" aria-label="Play or pause">⏸ Pause</button>
+        <span class="date" id="dateLbl"></span>
+        <input type="range" id="rDay" min="0" max="364" step="1" value="0" aria-label="Day of year">
+        <span class="spd">speed <input type="range" id="rSpeed" min="1" max="90" step="1"><b id="vSpeed"></b></span>
+        <button id="btnReset">↺ Defaults</button>
+      </div>
+    </section>
+
+    <div class="kpis" id="kpis"></div>
+    <div class="warn" id="warn"></div>
+
+    <div class="charts">
+      <section class="card chartbox">
+        <h2 style="padding:0 0 8px">Temperatures through the year</h2>
+        <canvas id="cT"></canvas>
+        <div class="legend">
+          <span><i style="background:#ff7043"></i>Store</span>
+          <span><i style="background:#66bb6a"></i>Indoor</span>
+          <span><i style="background:#4fc3f7"></i>Outdoor air</span>
+          <span><i style="background:#8d6e63"></i>Ground around store</span>
+        </div>
+      </section>
+      <section class="card chartbox">
+        <h2 style="padding:0 0 8px">Monthly energy balance &middot; kWh</h2>
+        <canvas id="cE"></canvas>
+        <div class="legend">
+          <span><i style="background:#ffb74d"></i>Collected</span>
+          <span><i style="background:#ff7043"></i>Delivered from store</span>
+          <span><i style="background:#7986cb"></i>Backup</span>
+          <span><i style="background:#455a75"></i>Store losses</span>
+        </div>
+      </section>
+    </div>
+
+    <details class="doc">
+      <summary>Model, formulas and assumptions</summary>
+      <div class="body" id="docBody"></div>
+    </details>
+  </div>
+</div>
+</div>
+
+<script>
+/* ==================== MODEL START ==================== */
+const clamp = (x, a, b) => (x < a ? a : x > b ? b : x);
+const TAU = Math.PI * 2, D2R = Math.PI / 180;
+
+const SITE = {
+  label: 'Bratislava, Slovakia',
+  lat: 48.15, lon: 17.11, alt: 134,
+  tGround: 10.5,
+  // long-term monthly mean air temperature, °C (1991–2020 normals)
+  temp: [0.3, 1.8, 6.0, 11.4, 16.1, 19.6, 21.5, 21.0, 16.0, 10.6, 5.3, 1.3],
+  // long-term monthly global horizontal irradiation, kWh/m² per month
+  ghi:  [27, 45, 87, 130, 162, 170, 178, 155, 108, 67, 31, 22],
+};
+
+const MONTH_LEN = [31,28,31,30,31,30,31,31,30,31,30,31];
+const MONTH_NAME = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_START = (() => { const a = []; let s = 0; for (const m of MONTH_LEN) { a.push(s); s += m; } return a; })();
+const monthOfDay = d => { let m = 0; while (m < 11 && d >= MONTH_START[m + 1]) m++; return m; };
+
+/* ---------- solar geometry ---------- */
+function declination(n) { return 23.45 * D2R * Math.sin(TAU * (284 + n) / 365); }
+function sunsetHourAngle(phi, dec) { return Math.acos(clamp(-Math.tan(phi) * Math.tan(dec), -1, 1)); }
+
+// daily extraterrestrial irradiation on a horizontal surface, kWh/m²
+function H0(n, phi) {
+  const dec = declination(n), ws = sunsetHourAngle(phi, dec);
+  const e = 1 + 0.033 * Math.cos(TAU * n / 365);
+  const j = (24 * 3600 * 1367 / Math.PI) * e *
+    (Math.cos(phi) * Math.cos(dec) * Math.sin(ws) + ws * Math.sin(phi) * Math.sin(dec));
+  return Math.max(0, j / 3.6e6);
+}
+const dayLength = (n, phi) => 24 / Math.PI * sunsetHourAngle(phi, declination(n));
+const noonAltitude = (n, phi) => (90 * D2R - phi + declination(n)) / D2R;
+
+// Erbs correlation: diffuse fraction from the daily clearness index
+function diffuseFraction(kT) {
+  if (kT <= 0.22) return 1 - 0.09 * kT;
+  if (kT <= 0.80) return 0.9511 - 0.1604*kT + 4.388*Math.pow(kT,2) - 16.638*Math.pow(kT,3) + 12.336*Math.pow(kT,4);
+  return 0.165;
+}
+// Liu–Jordan geometric factor for a south-facing tilted plane
+function Rbeam(n, phi, beta) {
+  const dec = declination(n);
+  const ws = sunsetHourAngle(phi, dec);
+  const wt = Math.min(ws, Math.acos(clamp(-Math.tan(phi - beta) * Math.tan(dec), -1, 1)));
+  const num = Math.cos(phi - beta) * Math.cos(dec) * Math.sin(wt) + wt * Math.sin(phi - beta) * Math.sin(dec);
+  const den = Math.cos(phi) * Math.cos(dec) * Math.sin(ws) + ws * Math.sin(phi) * Math.sin(dec);
+  return den > 1e-6 ? Math.max(0, num / den) : 0;
+}
+// HDKR anisotropic-sky transposition onto a tilted plane
+function transpose(h, n, phi, beta, albedo) {
+  const h0 = H0(n, phi);
+  if (h0 < 1e-6 || h <= 0) return 0;
+  const kT = clamp(h / h0, 0, 0.85);
+  const hd = h * diffuseFraction(kT), hb = h - hd;
+  const Ai = hb / h0;                        // circumsolar anisotropy index
+  const f = Math.sqrt(hb / h);               // horizon-brightening factor
+  return (hb + hd * Ai) * Rbeam(n, phi, beta)
+       + hd * (1 - Ai) * ((1 + Math.cos(beta)) / 2) * (1 + f * Math.pow(Math.sin(beta / 2), 3))
+       + h * albedo * (1 - Math.cos(beta)) / 2;
+}
+
+/* ---------- synthetic year for Bratislava ---------- */
+function smoothMonthly(vals, perDay) {
+  const out = [];
+  for (let d = 0; d < 365; d++) {
+    const m = monthOfDay(d), mid = MONTH_START[m] + MONTH_LEN[m] / 2;
+    const nb = d < mid ? (m + 11) % 12 : (m + 1) % 12;
+    const span = (MONTH_LEN[m] + MONTH_LEN[nb]) / 2;
+    const w = Math.min(0.5, Math.abs(d - mid) / span);
+    const a = perDay ? vals[m] / MONTH_LEN[m] : vals[m];
+    const b = perDay ? vals[nb] / MONTH_LEN[nb] : vals[nb];
+    out.push(a * (1 - w) + b * w);
+  }
+  return out;
+}
+
+function makeWeather(seed) {
+  let s = (seed === undefined ? 20240115 : seed) >>> 0;
+  const rnd = () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296;
+  const gauss = () => { let u = 0, v = 0; while (!u) u = rnd(); while (!v) v = rnd();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(TAU * v); };
+  const phi = SITE.lat * D2R;
+  const dailyGhi = smoothMonthly(SITE.ghi, true);
+  const dailyT = smoothMonthly(SITE.temp, false);
+
+  // correlated day-to-day anomalies (weather systems last several days)
+  const ta = [], ka = [];
+  let t = 0, k = 0;
+  for (let d = 0; d < 365; d++) { t = 0.74*t + gauss()*2.9; k = 0.58*k + gauss()*0.50; ta.push(t); ka.push(k); }
+  const detrend = (arr, sd) => {
+    const W = 15, out = [];
+    for (let d = 0; d < 365; d++) {
+      let s2 = 0;
+      for (let i = -W; i <= W; i++) s2 += arr[(d + i + 730) % 365];
+      out.push(arr[d] - s2 / (2 * W + 1));
+    }
+    const m = out.reduce((a, b) => a + b, 0) / 365;
+    const v = Math.sqrt(out.reduce((a, b) => a + Math.pow(b - m, 2), 0) / 365);
+    return out.map(x => (x - m) * (sd / v));
+  };
+  const taD = detrend(ta, 3.3), kaD = detrend(ka, 0.62);
+
+  const w = [];
+  for (let d = 0; d < 365; d++) {
+    const kt = clamp(1 + kaD[d] * 0.55, 0.14, 1.32);
+    const ghi = Math.max(0.03, Math.min(dailyGhi[d] * kt, 0.82 * H0(d, phi)));
+    const winter = Math.max(0, -Math.cos(TAU * (d - 172) / 365));
+    // clear winter days run colder, overcast ones milder
+    const tAmb = dailyT[d] + taD[d] - 2.2 * winter * (kt - 1);
+    w.push({ ghi, kt, tAmb, snow: 0, precip: kt < 0.55 ? (0.55 - kt) * 22 : 0 });
+  }
+  // pin every month back onto the published normals
+  for (let m = 0; m < 12; m++) {
+    const a = MONTH_START[m], b = a + MONTH_LEN[m];
+    let sg = 0, stv = 0;
+    for (let d = a; d < b; d++) { sg += w[d].ghi; stv += w[d].tAmb; }
+    const fg = SITE.ghi[m] / sg, dtv = SITE.temp[m] - stv / MONTH_LEN[m];
+    for (let d = a; d < b; d++) { w[d].ghi *= fg; w[d].tAmb += dtv; }
+  }
+  let sn = 0;
+  for (let d = 0; d < 365; d++) {
+    const x = w[d];
+    sn = x.tAmb < 1.0 ? Math.min(30, sn + x.precip) : Math.max(0, sn - Math.max(0, x.tAmb) * 2.5 - 0.5);
+    x.snow = sn;
+  }
+  return w;
+}
+
+/* ---------- components ---------- */
+const COLLECTORS = {
+  flat:     { name:'Flat-plate, selective absorber', short:'Flat plate',
+              eta0:0.78, a1:3.60, a2:0.0140, cost:290, tStag:195,
+              blurb:'The workhorse. Glazed box, black chrome / TiNOx absorber, 8–10 cm mineral wool behind.' },
+  flatHi:   { name:'High-efficiency flat-plate (AR glass, gas filled)', short:'Flat plate HE',
+              eta0:0.82, a1:2.85, a2:0.0110, cost:400, tStag:215,
+              blurb:'Anti-reflective glass and an inert gas fill cut the losses by roughly a fifth.' },
+  etHp:     { name:'Evacuated tube, heat-pipe', short:'Evacuated tube',
+              eta0:0.72, a1:1.40, a2:0.0080, cost:480, tStag:265,
+              blurb:'Vacuum kills convection, so it still works at 90 °C in January. Snow does not slide off.' },
+  etCpc:    { name:'Evacuated tube with CPC reflector', short:'CPC tube',
+              eta0:0.64, a1:0.90, a2:0.0040, cost:520, tStag:295,
+              blurb:'Sydney tubes over a compound-parabolic mirror. Lowest losses, lowest optical gain.' },
+  unglazed: { name:'Unglazed absorber mat (EPDM)', short:'Unglazed mat',
+              eta0:0.90, a1:15.0, a2:0.0000, cost:95, tStag:75,
+              blurb:'Superb optics, no insulation at all. Pool heating — hopeless as a seasonal charger.' },
+  pvt:      { name:'PVT hybrid (PV cells + water absorber)', short:'PVT hybrid',
+              eta0:0.52, a1:8.50, a2:0.0200, cost:620, tStag:95, pvEff:0.175,
+              blurb:'Makes electricity too, but the cells must stay cool, so the water never gets hot.' },
+};
+
+const STORAGES = {
+  tankIn:  { name:'Insulated water tank, inside the building', short:'Water tank (indoor)',
+             cRho:1.16, u:0.12, k:5.6, tMax:95, indoor:true, buried:false, vMin:3, vMax:300, vDef:30,
+             cost:v => 2600 + 900*Math.pow(v,0.78),
+             blurb:'The Sonnenhaus recipe: a 20–50 m³ steel buffer standing through two floors, 60 cm of insulation. Its losses stay in the house.' },
+  tankBur: { name:'Buried insulated water tank', short:'Water tank (buried)',
+             cRho:1.16, u:0.18, k:5.6, tMax:95, indoor:false, buried:true, vMin:10, vMax:2000, vDef:100,
+             cost:v => 9000 + 620*Math.pow(v,0.80),
+             blurb:'Concrete or steel cylinder in the garden. Frees up the house, but every kWh of loss is gone for good.' },
+  ptesW:   { name:'Water pit store with floating lid (PTES)', short:'Water pit (PTES)',
+             cRho:1.16, u:0.30, k:5.8, tMax:90, indoor:false, buried:true, vMin:100, vMax:60000, vDef:3000,
+             cost:v => 25000 + 230*Math.pow(v,0.72),
+             blurb:'A lined, insulated hole in the ground — the Danish district-heating approach (Vojens, Marstal). Cheap per m³, only sensible when huge.' },
+  ptesG:   { name:'Gravel–water pit store (PTES)', short:'Gravel–water pit',
+             cRho:0.66, u:0.25, k:5.8, tMax:90, indoor:false, buried:true, vMin:100, vMax:60000, vDef:1500,
+             cost:v => 22000 + 260*Math.pow(v,0.72),
+             blurb:'Gravel carries the load so the lid can be driven on, at about 57 % of water’s heat capacity.' },
+  sand:    { name:'Insulated sand bed under the building', short:'Sand bed',
+             cRho:0.56, u:0.22, k:6.0, tMax:120, indoor:false, buried:true, vMin:20, vMax:2000, vDef:300,
+             cost:v => 7000 + 320*Math.pow(v,0.75),
+             blurb:'Dry sand in an insulated box beneath the slab. Tolerates 120 °C, so it stores a lot per degree of volume.' },
+  btes:    { name:'Borehole field in rock (BTES)', short:'Boreholes (BTES)',
+             cRho:0.58, u:0.90, k:6.0, tMax:85, indoor:false, buried:true, vMin:500, vMax:200000, vDef:20000,
+             cost:v => 15000 + 60*Math.pow(v,0.72),
+             blurb:'U-tubes grouted into bedrock, as at Drake Landing. No insulation exists, so it only works at community scale.' },
+  pcm:     { name:'Paraffin PCM store (phase change at 58 °C)', short:'PCM store',
+             cRho:0.62, u:0.14, k:5.6, tMax:95, indoor:true, buried:false, vMin:3, vMax:200, vDef:25,
+             cost:v => 6000 + 4200*Math.pow(v,0.80), pcmT:58, pcmBand:3.0, pcmLat:62,
+             blurb:'Melting paraffin banks ~62 kWh/m³ in a 6 K window. Dense, but expensive and it pins the store near 58 °C.' },
+};
+
+const CLASSES = {
+  A0: { name:'A0 — nearly zero energy', target:18, limit:20.4,
+        note:'Mandatory for new Slovak family houses since 1 Jan 2021.' },
+  A1: { name:'A1 — ultra-low energy', target:33, limit:40.7,
+        note:'Mandatory for new family houses 2016–2020; heat demand ≤ 40.7 kWh/(m²·a).' },
+  B:  { name:'B — low energy (for comparison)', target:65, limit:81.4,
+        note:'Roughly a house built around 2010, shown to make the contrast visible.' },
+};
+
+const cRhoAt = (st, T) => st.pcmT
+  ? st.cRho + (Math.abs(T - st.pcmT) < st.pcmBand ? st.pcmLat / (2 * st.pcmBand) : 0)
+  : st.cRho;
+function energyBetween(st, V, tLo, tHi) {
+  if (tHi <= tLo) return 0;
+  if (!st.pcmT) return st.cRho * V * (tHi - tLo);
+  let e = 0; const n = Math.ceil((tHi - tLo) / 0.5), dT = (tHi - tLo) / n;
+  for (let i = 0; i < n; i++) e += cRhoAt(st, tLo + (i + 0.5) * dT) * V * dT;
+  return e;
+}
+
+/* ---------- house ---------- */
+function houseParams(cfg) {
+  return {
+    gInt:   cfg.occupants * 1.55 + 0.021 * cfg.floorArea,  // internal gains, kWh/day
+    winEff: 0.035 * cfg.floorArea,                         // effective south glazing, m²
+    Ch:     0.09 * cfg.floorArea,                          // thermal capacity, kWh/K
+  };
+}
+function windowGain(cfg, w, d, p) {
+  const hVert = transpose(w.ghi, d, SITE.lat * D2R, 90 * D2R, w.snow > 2 ? 0.6 : 0.2);
+  return p.winEff * hVert * (w.tAmb > 17 ? 0.35 : 1);   // external shading in summer
+}
+// quasi-steady seasonal demand (EN ISO 13790 monthly method) — calibrates UA to the energy class
+function referenceDemand(cfg, weather, UAh) {
+  const p = houseParams(cfg);
+  const a = 1 + (p.Ch * 1000 / UAh) / 15;
+  let q = 0;
+  for (let m = 0; m < 12; m++) {
+    let ls = 0, gn = 0;
+    for (let d = MONTH_START[m]; d < MONTH_START[m] + MONTH_LEN[m]; d++) {
+      ls += UAh * (20 - weather[d].tAmb) * 24 / 1000;
+      gn += p.gInt + windowGain(cfg, weather[d], d, p);
+    }
+    if (ls <= 0) continue;
+    const g = gn / ls;
+    const eta = Math.abs(g - 1) < 1e-6 ? a / (a + 1) : (1 - Math.pow(g, a)) / (1 - Math.pow(g, a + 1));
+    q += Math.max(0, ls - eta * gn);
+  }
+  return q;
+}
+function calibrateUA(cfg, weather) {
+  const target = CLASSES[cfg.houseClass].target * cfg.floorArea;
+  let lo = 5, hi = 12 * cfg.floorArea;
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    if (referenceDemand(cfg, weather, mid) < target) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+/* ---------- main simulation ---------- */
+function simulate(cfg) {
+  const col = COLLECTORS[cfg.collector], st = STORAGES[cfg.storage];
+  const weather = cfg.weather || makeWeather();
+  const phi = SITE.lat * D2R, beta = cfg.tilt * D2R;
+  const p = houseParams(cfg);
+  const UAh = calibrateUA(cfg, weather);
+  const refDemand = referenceDemand(cfg, weather, UAh);
+
+  const V = cfg.storeVolume;
+  const Aenv = st.k * Math.pow(V, 2 / 3);        // envelope area of a compact body, m²
+  const UAst = st.u * Aenv;                      // W/K
+  const tEnvBase = st.indoor ? 18 : SITE.tGround;
+  const Cshell = st.buried ? 0.45 * st.cRho * V : 0;   // warmed ground shell around a buried store
+  const UAfar = st.buried ? 0.55 * UAst : 0;
+  const tFloor = st.buried ? 4 : 6;
+  const dhwDay = cfg.occupants * 40 * 4.186 * 45 / 3600 * 1.20;  // kWh/day, 40 L/person at ΔT 45 K
+  const P_EX = cfg.exchangerKW;
+
+  let Tst = 45, Th = 21, Tsh = tEnvBase;
+  const SUB = 4, dt = 1 / SUB;
+  let out = null;
+
+  const take = q => { let r = q, g = 0;
+    while (r > 1e-9 && Tst > tFloor - 20) { const c = cRhoAt(st, Tst) * V; const d2 = Math.min(r / c, 0.5);
+      Tst -= d2; r -= d2 * c; g += d2 * c; } return g; };
+  const add = q => { let r = q;
+    while (r > 1e-9) { const c = cRhoAt(st, Tst) * V; const d2 = Math.min(r / c, 0.5); Tst += d2; r -= d2 * c; } };
+
+  // four consecutive years; the fourth is reported, by which point a buried store has settled in
+  for (let year = 0; year < 4; year++) {
+    const days = [];
+    const acc = { col:0, stag:0, ref:0, sh:0, dhw:0, solar:0, backup:0, elec:0, pv:0,
+                  loss:0, credit:0, cold:0, hpH:0, tilt:0, unmet:0, deliver:0 };
+    for (let d = 0; d < 365; d++) {
+      const w = weather[d];
+      const albedo = w.snow > 2 ? 0.6 : 0.2;
+      // snow lying on the collector blocks part of the gain
+      const hT = transpose(w.ghi, d, phi, beta, albedo) * (1 - Math.min(0.55, w.snow / 45) * Math.max(0, 1 - beta / (75*D2R)));
+      const gSol = windowGain(cfg, w, d, p);
+      const Gop = clamp(200 + 80 * hT, 220, 780);      // mean irradiance while the pump runs, W/m²
+      const dayQ = { col:0, ref:0, solar:0, backup:0, elec:0, loss:0, stag:0,
+                     sh:0, dhw:0, credit:0, deliver:0, unmet:0, eta:0 };
+
+      for (let s = 0; s < SUB; s++) {
+        /* --- collector loop (runs in the two daytime sub-steps) --- */
+        let qCol = 0, eta = 0;
+        if (s < 2 && hT > 0.02) {
+          const Tm = Tst + 6, dT = Tm - w.tAmb;
+          eta = Math.max(0, col.eta0 - col.a1 * dT / Gop - col.a2 * dT * dT / Gop) * 0.93;
+          qCol = cfg.collArea * (hT / 2) * eta;
+          if (Tst >= st.tMax || Tm > col.tStag) { dayQ.stag += qCol; qCol = 0; }
+          else {
+            const room = energyBetween(st, V, Tst, st.tMax);
+            if (qCol > room) { dayQ.stag += qCol - room; qCol = room; }
+          }
+          dayQ.eta = eta;
+        }
+
+        /* --- demands --- */
+        const tSup = clamp(25 + 0.55 * (20 - w.tAmb), 25, 40);   // underfloor heating curve
+        let cap = P_EX * 24 * dt;
+        const demRef = Math.max(0, UAh * (21 - w.tAmb) * 24 * dt / 1000 - (gSol + p.gInt) * dt);
+        const lossH = UAh * (Th - w.tAmb) * 24 * dt / 1000;
+        const demSH = clamp(lossH - (gSol + p.gInt) * dt + clamp(p.Ch * (21 - Th) * 0.5, -cap, cap), 0, cap);
+        const demDHW = dhwDay * dt;
+
+        let fromStore = 0, elec = 0, bkHeat = 0, gotSH = 0, gotDHW = 0;
+
+        /* --- hot water first: direct above 56 °C, otherwise pre-heat the mains --- */
+        if (demDHW > 0 && cap > 0) {
+          let q = 0;
+          if (Tst > 56) q = Math.min(demDHW, energyBetween(st, V, 56, Tst), cap);
+          else if (Tst > 14) q = Math.min(demDHW * clamp((Tst - 14) / 45, 0, 1), energyBetween(st, V, 14, Tst), cap);
+          const g = take(q); fromStore += g; gotDHW += g; cap -= g;
+        }
+        /* --- space heating, straight out of the store --- */
+        if (demSH > 0 && Tst > tSup + 3 && cap > 0) {
+          const q = Math.min(demSH, energyBetween(st, V, tSup + 3, Tst), cap);
+          const g = take(q); fromStore += g; gotSH += g; cap -= g;
+        }
+
+        const restSH = Math.max(0, demSH - gotSH), restDHW = Math.max(0, demDHW - gotDHW);
+
+        /* --- backup --- */
+        if (cfg.backup === 'hp') {
+          const jobs = [[restSH, tSup, true], [restDHW, 55, false]];
+          for (let i = 0; i < 2; i++) {
+            const q = jobs[i][0], tS = jobs[i][1], isSH = jobs[i][2];
+            if (q <= 1e-9) continue;
+            const copStore = clamp(0.45 * (tS + 273.15) / Math.max(6, tS - Tst), 1.8, 6.5);
+            const useStore = Tst > 8 && cap > 0 && energyBetween(st, V, tFloor, Tst) > q - q / copStore;
+            const tSrc = useStore ? Tst : Math.max(-15, w.tAmb - 1);
+            const cop = clamp(0.45 * (tS + 273.15) / Math.max(6, tS - tSrc), 1.8, 6.5);
+            const e = q / cop;
+            elec += e;
+            if (useStore) { const g = take(Math.min(q - e, cap)); fromStore += g; cap -= g; }
+            if (isSH) gotSH += q; else gotDHW += q;
+            acc.hpH += q;
+          }
+        } else if (cfg.backup !== 'none') {
+          bkHeat = restSH + restDHW;
+          gotSH += restSH; gotDHW += restDHW;
+        }
+
+        /* --- storage node --- */
+        add(qCol);
+        const qLoss = UAst * (Tst - (st.buried ? Tsh : tEnvBase)) * 24 * dt / 1000;
+        take(qLoss);
+        if (st.buried) Tsh += (qLoss - UAfar * (Tsh - tEnvBase) * 24 * dt / 1000) / Math.max(0.01, Cshell);
+        // an indoor tank heats the house as it leaks — welcome in winter, vented away in summer
+        const credit = st.indoor ? 0.70 * qLoss * (Th < 22 ? 1 : 0.15) : 0;
+
+        /* --- house node --- */
+        // above 24 °C the occupants open the windows, which multiplies the loss coefficient
+        const vent = Th > 24 ? 5 * UAh * (Th - 24) * 24 * dt / 1000 : 0;
+        Th = clamp(Th + (gotSH + (gSol + p.gInt) * dt + credit - vent
+                    - UAh * (Th - w.tAmb) * 24 * dt / 1000) / p.Ch, -5, 30);
+
+        dayQ.col += qCol; dayQ.loss += qLoss; dayQ.credit += credit;
+        dayQ.sh += gotSH; dayQ.dhw += gotDHW; dayQ.ref += demRef;
+        dayQ.solar += fromStore; dayQ.backup += bkHeat; dayQ.elec += elec;
+        dayQ.deliver += gotSH + gotDHW;
+        dayQ.unmet += Math.max(0, demSH - gotSH) + Math.max(0, demDHW - gotDHW);
+      }
+
+      acc.col += dayQ.col; acc.stag += dayQ.stag; acc.ref += dayQ.ref;
+      acc.sh += dayQ.sh; acc.dhw += dayQ.dhw;
+      acc.solar += dayQ.solar; acc.backup += dayQ.backup; acc.elec += dayQ.elec;
+      acc.loss += dayQ.loss; acc.credit += dayQ.credit;
+      acc.unmet += dayQ.unmet; acc.deliver += dayQ.deliver;
+      acc.tilt += hT;
+      if (col.pvEff) acc.pv += cfg.collArea * hT * col.pvEff * 0.88;
+      if (Th < 19.0) acc.cold++;
+      days.push({ d, tAmb: w.tAmb, ghi: w.ghi, snow: w.snow, kt: w.kt, hT,
+                  tStore: Tst, tHouse: Th, tShell: Tsh,
+                  col: dayQ.col, stag: dayQ.stag, solar: dayQ.solar, backup: dayQ.backup,
+                  elec: dayQ.elec, loss: dayQ.loss, sh: dayQ.sh, dhw: dayQ.dhw,
+                  deliver: dayQ.deliver, unmet: dayQ.unmet, eta: dayQ.eta });
+    }
+    out = { days: days, acc: acc };
+  }
+
+  const a = out.acc;
+  a.nonSolar = a.backup + a.elec;
+  a.solarFraction = a.deliver > 0 ? clamp(a.solar / (a.solar + a.nonSolar), 0, 1) : 0;
+  a.load = a.deliver;
+  a.coverage = (a.deliver + a.unmet) > 0 ? clamp(a.deliver / (a.deliver + a.unmet), 0, 1) : 1;
+  a.UAh = UAh; a.UAst = UAst; a.Aenv = Aenv;
+  a.refDemand = refDemand; a.specDemand = refDemand / cfg.floorArea;
+  a.capacity = energyBetween(st, V, 30, st.tMax);
+  a.yieldPerM2 = a.col / cfg.collArea;
+  a.tMin = Math.min.apply(null, out.days.map(x => x.tStore));
+  a.tMax = Math.max.apply(null, out.days.map(x => x.tStore));
+  a.capex = COLLECTORS[cfg.collector].cost * cfg.collArea + STORAGES[cfg.storage].cost(V);
+  return out;
+}
+/* ==================== MODEL END ==================== */
+
+
+/* ==================== VIEW ==================== */
+const $ = id => document.getElementById(id);
+const PHI = SITE.lat * D2R;
+const WEATHER = makeWeather();
+
+const DEFAULTS = { collector:'flat', collArea:35, tilt:50, storage:'tankIn', storeVolume:30,
+                   houseClass:'A1', floorArea:150, occupants:4, backup:'gas', exchangerKW:15 };
+let cfg = Object.assign({}, DEFAULTS);
+let sim = null;
+
+/* ---------- helpers ---------- */
+const fmt = (x, d) => (Math.abs(x) >= 1000 && (d === undefined || d === 0))
+  ? Math.round(x).toLocaleString('en-US')
+  : x.toFixed(d === undefined ? 0 : d);
+const dateLabel = d => {
+  const m = monthOfDay(d);
+  return (d - MONTH_START[m] + 1) + ' ' + MONTH_NAME[m];
+};
+const SEASONS = [
+  { n:'Winter', a:334, b:59,  c:'#8fbfe0' }, { n:'Spring', a:59,  b:151, c:'#8fd39a' },
+  { n:'Summer', a:151, b:243, c:'#ffd166' }, { n:'Autumn', a:243, b:334, c:'#e8a05c' },
+];
+const seasonOf = d => SEASONS.find(s => s.a < s.b ? (d >= s.a && d < s.b) : (d >= s.a || d < s.b));
+
+// temperature → colour ramp
+function tempColor(t) {
+  const stops = [[-15,'#2b6cb0'],[0,'#4fc3f7'],[15,'#4db6ac'],[30,'#9ccc65'],
+                 [45,'#ffd54f'],[65,'#ffa726'],[85,'#f4511e'],[110,'#c62828']];
+  if (t <= stops[0][0]) return stops[0][1];
+  if (t >= stops[stops.length-1][0]) return stops[stops.length-1][1];
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (t >= stops[i][0] && t <= stops[i+1][0]) {
+      const f = (t - stops[i][0]) / (stops[i+1][0] - stops[i][0]);
+      return mixHex(stops[i][1], stops[i+1][1], f);
+    }
+  }
+  return '#888';
+}
+function mixHex(a, b, f) {
+  const pa = [1,3,5].map(i => parseInt(a.substr(i,2),16));
+  const pb = [1,3,5].map(i => parseInt(b.substr(i,2),16));
+  return '#' + pa.map((v,i) => Math.round(v + (pb[i]-v)*f).toString(16).padStart(2,'0')).join('');
+}
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ---------- collector artwork ---------- */
+// Every collector is drawn inside a local 210 × 62 box, origin top-left,
+// then rotated onto the roof by the caller.
+function collectorArt(key, w, h) {
+  const W = w === undefined ? 210 : w, H = h === undefined ? 62 : h;
+  const frame = '<rect x="0" y="0" width="'+W+'" height="'+H+'" rx="4" fill="#2f3a49" stroke="#8b98a8" stroke-width="1.6"/>';
+  let inner = '';
+  if (key === 'flat' || key === 'flatHi') {
+    const stripes = [];
+    for (let i = 0; i < 9; i++) {
+      const x = 8 + i * (W - 16) / 9;
+      stripes.push('<rect x="'+x.toFixed(1)+'" y="7" width="'+((W-16)/9-2.2).toFixed(1)+'" height="'+(H-14)+'" rx="1.5" fill="#12161c"/>');
+    }
+    inner = '<rect x="5" y="4" width="'+(W-10)+'" height="'+(H-8)+'" rx="2" fill="#1b2129"/>' + stripes.join('') +
+      '<rect x="8" y="7" width="'+(W-16)+'" height="'+(H-14)+'" fill="'+(key==='flatHi'?'#7fd7ff':'#9ad4f0')+'" opacity="'+(key==='flatHi'?0.24:0.34)+'"/>' +
+      '<path d="M10 '+(H-9)+' L'+(W*0.42)+' 9" stroke="#ffffff" stroke-opacity=".45" stroke-width="2.5"/>' +
+      '<path d="M'+(W*0.55)+' '+(H-9)+' L'+(W*0.86)+' 9" stroke="#ffffff" stroke-opacity=".22" stroke-width="2"/>' +
+      '<rect x="4" y="'+(H-4.5)+'" width="'+(W-8)+'" height="3" rx="1.5" fill="#b9c4d2"/>';
+  } else if (key === 'etHp' || key === 'etCpc') {
+    const n = 11, gap = (W - 20) / n, tubes = [];
+    for (let i = 0; i < n; i++) {
+      const x = 12 + i * gap;
+      if (key === 'etCpc') tubes.push('<path d="M'+(x-gap*0.42)+' '+(H-7)+' Q'+x+' '+(H-26)+' '+(x+gap*0.42)+' '+(H-7)+'" fill="#c9d6e2" stroke="#8b98a8" stroke-width="0.8"/>');
+      tubes.push('<rect x="'+(x-gap*0.30)+'" y="9" width="'+(gap*0.60)+'" height="'+(H-19)+'" rx="'+(gap*0.30)+'" fill="#0f1a24" stroke="#6f8296" stroke-width="0.9"/>');
+      tubes.push('<rect x="'+(x-gap*0.30+1.2)+'" y="11" width="'+(gap*0.22)+'" height="'+(H-23)+'" rx="'+(gap*0.11)+'" fill="#ffffff" opacity=".30"/>');
+      tubes.push('<rect x="'+(x-1)+'" y="4" width="2" height="7" fill="#c0392b"/>');
+    }
+    inner = '<rect x="0" y="0" width="'+W+'" height="9" rx="3" fill="#9aa7b6"/>' +
+            '<rect x="0" y="2" width="'+W+'" height="3" fill="#c3cedb"/>' + tubes.join('');
+  } else if (key === 'unglazed') {
+    const n = 16, rows = [];
+    for (let i = 0; i < n; i++) {
+      const x = 6 + i * (W - 12) / n;
+      rows.push('<rect x="'+x.toFixed(1)+'" y="9" width="'+((W-12)/n-1.6).toFixed(1)+'" height="'+(H-18)+'" rx="2" fill="#101418"/>');
+    }
+    inner = '<rect x="2" y="6" width="'+(W-4)+'" height="'+(H-12)+'" rx="3" fill="#1a1f24"/>' + rows.join('') +
+            '<rect x="2" y="4" width="'+(W-4)+'" height="5" rx="2.5" fill="#3d4753"/>' +
+            '<rect x="2" y="'+(H-9)+'" width="'+(W-4)+'" height="5" rx="2.5" fill="#3d4753"/>';
+  } else { // pvt
+    const cells = [];
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 8; c++) {
+      const cw = (W - 18) / 8, ch = (H - 18) / 2;
+      cells.push('<rect x="'+(9 + c*cw)+'" y="'+(9 + r*ch)+'" width="'+(cw-2)+'" height="'+(ch-2)+'" rx="1.5" fill="#16305c"/>' +
+                 '<path d="M'+(9+c*cw+cw/2-1)+' '+(9+r*ch+1)+' v'+(ch-4)+'" stroke="#7fa8dd" stroke-width="0.7" opacity=".8"/>');
+    }
+    inner = '<rect x="5" y="5" width="'+(W-10)+'" height="'+(H-10)+'" rx="2" fill="#0d1b33"/>' + cells.join('') +
+            '<path d="M10 '+(H-8)+' L'+(W*0.4)+' 8" stroke="#ffffff" stroke-opacity=".30" stroke-width="2.5"/>' +
+            '<rect x="4" y="'+(H-5)+'" width="'+(W-8)+'" height="3.5" rx="1.7" fill="#c0392b" opacity=".85"/>';
+  }
+  return frame + inner;
+}
+
+/* ---------- storage artwork ---------- */
+// Drawn in stage coordinates. Ground line is y = 430.
+const GY = 430;
+function storageArt(key, V) {
+  const st = STORAGES[key];
+  // gentle cube-root scaling so the drawing reacts to volume without ever leaving the frame
+  const s = clamp(Math.pow(V / st.vDef, 1/3), 0.62, 1.42);
+  const cx = 320;
+  let g = '', label = '', anchor;
+
+  if (st.indoor) {
+    // an indoor store literally stands in the house, so draw it inside the cutaway
+    const w = Math.min(124, 106 * s), h = Math.min(HX.floorH - 14, 134 * s);
+    const x = HX.left + 54, y = GY - 18 - h;
+    g = '<rect x="'+(x-10)+'" y="'+(y-10)+'" width="'+(w+20)+'" height="'+(h+16)+'" rx="9" fill="url(#pInsul)"/>' +
+      '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="6" fill="url(#gStore)" id="storeFill"/>' +
+      (key === 'pcm' ? pcmBalls(x, y, w, h) : stratLines(x, y, w, h)) +
+      '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="6" fill="none" stroke="#c9d6e2" stroke-width="2"/>' +
+      '<rect x="'+(x + w/2 - 13)+'" y="'+(y-18)+'" width="26" height="11" rx="3" fill="#9aa7b6"/>';
+    anchor = { inX: x + w * 0.28, inY: y - 8, outX: x + w * 0.75, outY: y + h + 4,
+               botY: y + h, indoor: true };
+    label = { x: x + w/2, y: y + h/2 };
+    return { svg: g, anchor: anchor, label: label, scaled: s };
+  }
+
+  if (key === 'tankBur') {
+    const w = 190 * s, h = 150 * s, x = cx - w/2, y = GY + 34;
+    g = '<rect x="'+(x-13)+'" y="'+(y-13)+'" width="'+(w+26)+'" height="'+(h+26)+'" rx="12" fill="url(#pInsul)"/>' +
+      '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="8" fill="url(#gStore)" id="storeFill"/>' +
+      stratLines(x, y, w, h) +
+      '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="8" fill="none" stroke="#c9d6e2" stroke-width="2"/>';
+    anchor = { inX: cx - w/4, inY: y, outX: cx + w/4, outY: y + h, botY: y + h };
+    label = { x: cx, y: y + h/2 };
+  } else if (key === 'ptesW' || key === 'ptesG') {
+    const w = 230 * s, h = 132 * s, x = cx - w/2, y = GY + 26;
+    const slope = 34 * s;
+    const pit = 'M'+(x-slope)+' '+y+' L'+(x+w+slope)+' '+y+' L'+(x+w)+' '+(y+h)+' L'+x+' '+(y+h)+' Z';
+    const lid = 'M'+(x-slope-10)+' '+(y-4)+' L'+(x+w+slope+10)+' '+(y-4)+' L'+(x+w+slope+10)+' '+(y+10)+' L'+(x-slope-10)+' '+(y+10)+' Z';
+    g = '<path d="'+pit+'" fill="url(#gStore)" id="storeFill" stroke="#0d1620" stroke-width="1"/>' +
+      (key === 'ptesG' ? gravelDots(x, y, w, h, slope) : stratLines(x + 6, y + 6, w - 12, h - 12)) +
+      '<path d="'+pit+'" fill="none" stroke="#2f3d4d" stroke-width="4"/>' +
+      '<path d="'+pit+'" fill="none" stroke="#7fdcff" stroke-width="1.4" stroke-dasharray="4 4" opacity=".7"/>' +
+      '<path d="'+lid+'" fill="url(#pInsul)" stroke="#8b7a5e" stroke-width="1.5"/>';
+    anchor = { inX: cx - w/4, inY: y + 6, outX: cx + w/4, outY: y + h - 6, botY: y + h };
+    label = { x: cx, y: y + h/2 + 4 };
+  } else if (key === 'sand') {
+    const w = 220 * s, h = 104 * s, x = cx - w/2, y = GY + 40;
+    g = '<rect x="'+(x-12)+'" y="'+(y-12)+'" width="'+(w+24)+'" height="'+(h+24)+'" rx="6" fill="url(#pInsul)"/>' +
+      '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="3" fill="url(#gStore)" id="storeFill"/>' +
+      sandDots(x, y, w, h) + pipeCoil(x, y, w, h) +
+      '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="3" fill="none" stroke="#c9d6e2" stroke-width="2"/>';
+    anchor = { inX: x + 16, inY: y, outX: x + w - 16, outY: y + h, botY: y + h };
+    label = { x: cx, y: y + h/2 + 4 };
+  } else { // btes
+    const w = 240 * s, h = 170 * s, x = cx - w/2, y = GY + 28;
+    const n = 7, holes = [];
+    for (let i = 0; i < n; i++) {
+      const bx = x + 14 + i * (w - 28) / (n - 1);
+      holes.push('<path d="M'+bx+' '+y+' v'+h+'" stroke="#0e1620" stroke-width="7" stroke-linecap="round"/>' +
+                 '<path d="M'+(bx-2.2)+' '+y+' v'+(h-6)+' a2.2 2.2 0 0 0 4.4 0 v-'+(h-6)+'" fill="none" stroke="#e8f4ff" stroke-width="1.6" opacity=".75"/>');
+    }
+    g = '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="4" fill="url(#gStore)" opacity=".78" id="storeFill"/>' +
+      '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="4" fill="url(#pRock)" opacity=".38"/>' +
+      holes.join('') +
+      '<rect x="'+(x-10)+'" y="'+(y-13)+'" width="'+(w+20)+'" height="13" fill="url(#pInsul)"/>' +
+      '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="4" fill="none" stroke="#6d7f93" stroke-width="1.6" stroke-dasharray="7 5"/>';
+    anchor = { inX: x + 20, inY: y - 6, outX: x + w - 20, outY: y - 6, botY: y + h };
+    label = { x: cx, y: y + h/2 + 6 };
+  }
+
+  // human figure standing on the ground, always 1.8 m tall, so the excavation has a sense of scale
+  const fx = cx + 196;
+  const scaleFig = '<g transform="translate('+fx+','+(GY - 3)+')">' +
+    '<g stroke="#0f1a26" stroke-width="6" fill="none" stroke-linecap="round">' +
+      '<path d="M0 -34 v20 M-8 -26 h16 M0 -14 l-7 14 M0 -14 l7 14"/></g>' +
+    '<circle cx="0" cy="-40" r="7.5" fill="#0f1a26"/><circle cx="0" cy="-40" r="5.5" fill="#dce8f4"/>' +
+    '<path d="M0 -34 v20 M-8 -26 h16 M0 -14 l-7 14 M0 -14 l7 14" stroke="#dce8f4" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+    '<text x="13" y="-14" font-size="10.5" fill="#e6eef8" font-family="system-ui" ' +
+      'style="paint-order:stroke;stroke:#0f1a26;stroke-width:3px">1.8 m</text></g>';
+
+  return { svg: g + scaleFig, anchor: anchor, label: label, scaled: s };
+}
+function stratLines(x, y, w, h) {
+  let o = '';
+  for (let i = 1; i < 6; i++) o += '<path d="M'+(x+5)+' '+(y + i*h/6)+' h'+(w-10)+'" stroke="#ffffff" stroke-opacity=".13" stroke-width="1.4"/>';
+  return o;
+}
+function gravelDots(x, y, w, h, slope) {
+  let o = '', s = 12345;
+  const r = () => (s = (Math.imul(s, 1103515245) + 12345) >>> 0) / 4294967296;
+  for (let i = 0; i < 90; i++) {
+    const fy = r(), px = x - slope*(1-fy) + r()*(w + 2*slope*(1-fy)), py = y + fy*h;
+    o += '<circle cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" r="'+(1.6+r()*2.2).toFixed(1)+'" fill="#1c2733" opacity=".5"/>';
+  }
+  return o;
+}
+function sandDots(x, y, w, h) {
+  let o = '', s = 999;
+  const r = () => (s = (Math.imul(s, 1103515245) + 12345) >>> 0) / 4294967296;
+  for (let i = 0; i < 110; i++)
+    o += '<circle cx="'+(x + r()*w).toFixed(1)+'" cy="'+(y + r()*h).toFixed(1)+'" r="'+(0.9+r()*1.1).toFixed(1)+'" fill="#000" opacity=".22"/>';
+  return o;
+}
+function pcmBalls(x, y, w, h) {
+  let o = '', s = 4242;
+  const r = () => (s = (Math.imul(s, 1103515245) + 12345) >>> 0) / 4294967296;
+  for (let i = 0; i < 40; i++)
+    o += '<circle cx="'+(x + 8 + r()*(w-16)).toFixed(1)+'" cy="'+(y + 8 + r()*(h-16)).toFixed(1)+'" r="'+(4+r()*4).toFixed(1)+
+         '" fill="#ffffff" opacity=".22" stroke="#ffffff" stroke-opacity=".33" stroke-width="1"/>';
+  return o;
+}
+function pipeCoil(x, y, w, h) {
+  let d = 'M'+(x+12)+' '+(y+14);
+  const rows = 4;
+  for (let i = 0; i < rows; i++) {
+    const yy = y + 14 + i * (h - 28) / (rows - 1);
+    d += (i % 2 === 0 ? ' L'+(x+w-12)+' '+yy : ' L'+(x+12)+' '+yy);
+    if (i < rows - 1) d += ' L'+(i % 2 === 0 ? (x+w-12) : (x+12))+' '+(yy + (h-28)/(rows-1));
+  }
+  return '<path d="'+d+'" fill="none" stroke="#c0392b" stroke-width="2.6" opacity=".55" stroke-linejoin="round"/>';
+}
+
+/* ---------- house artwork ---------- */
+const HX = { left:700, right:1110, eave:280, apexX:905, floorH:116 };
+// The roof can only be drawn over a limited pitch range; a steeper array is raised on struts.
+function houseGeom(tilt) {
+  const run = HX.apexX - HX.left;
+  const pitch = clamp(tilt, 15, 44);
+  return { pitch: pitch, run: run, apexY: HX.eave - run * Math.tan(pitch * D2R) };
+}
+function houseArt(tilt, hasTank) {
+  const g = houseGeom(tilt);
+  const wallTop = HX.eave + 18, W = HX.right - HX.left;
+  const body = '<rect x="'+HX.left+'" y="'+wallTop+'" width="'+W+'" height="'+(GY-wallTop)+'" fill="#e9e2d5"/>';
+  const insul = '<rect x="'+(HX.left-10)+'" y="'+wallTop+'" width="10" height="'+(GY-wallTop)+'" fill="url(#pInsul)"/>' +
+                '<rect x="'+HX.right+'" y="'+wallTop+'" width="10" height="'+(GY-wallTop)+'" fill="url(#pInsul)"/>';
+  const gable = '<path d="M'+HX.left+' '+wallTop+' L'+HX.apexX+' '+(g.apexY+10)+' L'+HX.right+' '+wallTop+' Z" fill="#ded5c4"/>';
+  const roof = '<path d="M'+(HX.left-30)+' '+(HX.eave+16)+' L'+HX.apexX+' '+(g.apexY-8)+' L'+(HX.right+30)+' '+(HX.eave+16)+
+               ' L'+(HX.right+30)+' '+(HX.eave+30)+' L'+HX.apexX+' '+(g.apexY+6)+' L'+(HX.left-30)+' '+(HX.eave+30)+
+               ' Z" fill="#6b4b3a" stroke="#4a3226" stroke-width="1.4"/>';
+  const room = '<rect id="roomGlow" x="'+(HX.left+4)+'" y="'+(wallTop+4)+'" width="'+(W-8)+'" height="'+(GY-wallTop-10)+'" fill="url(#gRoom)" opacity="0"/>';
+  const slab = '<rect x="'+(HX.left-10)+'" y="'+(GY-16)+'" width="'+(W+20)+'" height="16" fill="#b9b2a5"/>' +
+               '<rect x="'+(HX.left-10)+'" y="'+GY+'" width="'+(W+20)+'" height="10" fill="url(#pInsul)"/>';
+  let ufh = '';
+  for (let i = 0; i < 14; i++)
+    ufh += '<circle class="ufh" cx="'+(HX.left + 18 + i*(W-36)/13)+'" cy="'+(GY-8)+'" r="4.4" fill="#c0392b"/>';
+  const win = (x, y, w, h) => '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="2" fill="url(#gGlass)" stroke="#8d9aa8" stroke-width="2.5"/>' +
+    '<path d="M'+(x+w*0.5)+' '+y+' v'+h+'" stroke="#8d9aa8" stroke-width="2"/>';
+  const windows = (hasTank ? '' : win(HX.left+30, wallTop+26, 84, 58)) +
+                  win(HX.left+318, wallTop+26, 76, 58);
+  const door = '<rect x="'+(HX.left+248)+'" y="'+(GY-84)+'" width="42" height="68" rx="2" fill="#7a5c3e" stroke="#5d4530" stroke-width="2"/>' +
+               '<circle cx="'+(HX.left+280)+'" cy="'+(GY-50)+'" r="2.8" fill="#e0c068"/>';
+  // two people, drawn at the same scale as the 1.8 m figure outside
+  const person = (x, s) => '<g transform="translate('+x+','+(GY-16)+') scale('+s+')" fill="#5b6b7d">' +
+    '<circle cx="0" cy="-46" r="7"/>' +
+    '<path d="M0 -39 v22 M-9 -31 h18 M0 -17 l-8 17 M0 -17 l8 17" stroke="#5b6b7d" stroke-width="3.4" fill="none" stroke-linecap="round"/></g>';
+  const folk = '<g opacity=".85">' + person(HX.left+206, 1) + person(HX.left+236, 0.75) + '</g>';
+  const snowCap = '<path id="roofSnow" d="M'+(HX.left-30)+' '+(HX.eave+14)+' L'+HX.apexX+' '+(g.apexY-10)+
+    ' L'+(HX.right+30)+' '+(HX.eave+14)+'" fill="none" stroke="#f2f8ff" stroke-width="7" ' +
+    'stroke-linecap="round" stroke-linejoin="round" opacity="0"/>';
+  return body + insul + gable + room + slab + ufh + windows + door + folk + roof + snowCap;
+}
+
+/* Array mounting: the panel always sits at the true tilt, anchored at the eave.
+   When that is steeper than the drawn roof, visible struts fill the wedge. */
+function arrayPlacement(tilt) {
+  const g = houseGeom(tilt);
+  // the roof surface runs from the eave corner to the ridge; sit the array on it
+  const rx0 = HX.left - 30, ry0 = HX.eave + 16;
+  const ax = HX.left - 12;
+  const ay = ry0 - (ax - rx0) * Math.tan(g.pitch * D2R);
+  const t = tilt * D2R, ct = Math.cos(t), stt = Math.sin(t);
+  const roofLen = Math.hypot(g.run, HX.eave - g.apexY);
+  let len = Math.min(250, roofLen + 26);
+  if (stt > 0.02) len = Math.min(len, (ay - 84) / stt);
+  if (ct > 0.02) len = Math.min(len, (HX.apexX + 4 - ax) / ct);
+  len = Math.max(96, len);
+  return { ax: ax, ay: ay, len: len, angle: -tilt, pitch: g.pitch, apexY: g.apexY };
+}
+
+/* ---------- static scenery ---------- */
+function buildScenery() {
+  // hills
+  $('hills').innerHTML =
+    '<path d="M0 430 Q160 344 340 400 T700 386 T1200 404 L1200 430 Z" fill="#2f4a5c" opacity=".55"/>' +
+    '<path d="M0 430 Q220 380 460 416 T980 404 T1200 424 L1200 430 Z" fill="#3a5a63" opacity=".5"/>';
+  // clouds
+  let c = '';
+  const cl = [[150,90,1.0],[430,60,0.75],[760,110,0.9],[1010,64,0.65],[610,150,0.55]];
+  for (let i = 0; i < cl.length; i++) {
+    const x = cl[i][0], y = cl[i][1], s = cl[i][2];
+    c += '<g class="cloud" data-x="'+x+'" data-s="'+s+'" transform="translate('+x+','+y+') scale('+s+')" opacity=".8">' +
+      '<ellipse cx="0" cy="0" rx="54" ry="21" fill="#ffffff"/>' +
+      '<ellipse cx="-34" cy="7" rx="34" ry="16" fill="#ffffff"/>' +
+      '<ellipse cx="33" cy="6" rx="38" ry="17" fill="#ffffff"/>' +
+      '<ellipse cx="6" cy="-13" rx="27" ry="17" fill="#ffffff"/></g>';
+  }
+  $('clouds').innerHTML = c;
+  // stars for the dark winter sky
+  let stars = '', s2 = 77;
+  const r = () => (s2 = (Math.imul(s2, 1103515245) + 12345) >>> 0) / 4294967296;
+  for (let i = 0; i < 60; i++)
+    stars += '<circle cx="'+(r()*1200).toFixed(0)+'" cy="'+(r()*300).toFixed(0)+'" r="'+(0.7+r()*1.1).toFixed(1)+'" fill="#fff"/>';
+  $('stars').innerHTML = stars;
+  // trees
+  let t = '';
+  const tp = [[604,1.0],[646,0.72],[1168,0.86]];
+  for (let i = 0; i < tp.length; i++) {
+    const x = tp[i][0], s = tp[i][1];
+    t += '<g class="tree" transform="translate('+x+','+GY+') scale('+s+')">' +
+      '<path d="M0 0 v-52 M0 -34 l-14 -14 M0 -22 l13 -13" stroke="#5a4130" stroke-width="6" fill="none" stroke-linecap="round"/>' +
+      '<g class="crown"><circle cx="0" cy="-72" r="30"/><circle cx="-22" cy="-56" r="21"/><circle cx="23" cy="-58" r="23"/>' +
+      '<circle cx="0" cy="-92" r="20"/></g></g>';
+  }
+  $('trees').innerHTML = t;
+  // snowfall particles
+  let sf = '', s3 = 313;
+  const r3 = () => (s3 = (Math.imul(s3, 1103515245) + 12345) >>> 0) / 4294967296;
+  for (let i = 0; i < 70; i++)
+    sf += '<circle class="flake" data-x="'+(r3()*1200).toFixed(0)+'" data-p="'+r3().toFixed(3)+
+          '" data-r="'+(1.2 + r3()*1.9).toFixed(1)+'" cx="0" cy="0" r="2" fill="#fff"/>';
+  $('snowfall').innerHTML = sf;
+}
+
+// The soil only needs to be as deep as the chosen store, so the frame adapts to it.
+function applySceneHeight() {
+  const H = STORAGES[cfg.storage].buried ? 660 : 516;
+  $('stage').setAttribute('viewBox', '0 0 1200 ' + H);
+  $('ground').setAttribute('height', String(H - 430));
+
+  let soil = '';
+  for (let i = 0; i < 7 && 452 + i * 30 < H; i++)
+    soil += '<path d="M0 '+(452 + i*30)+' Q300 '+(444 + i*30)+' 600 '+(454 + i*30)+' T1200 '+(448 + i*30)+'" stroke="#7a5f45" stroke-width="1.2" fill="none"/>';
+  for (let m = 2; m <= 6; m += 2) {                 // depth scale at 31 px per metre
+    const y = GY + m * 31;
+    if (y > H - 34) break;
+    soil += '<path d="M14 '+y+' h1172" stroke="#c9a97f" stroke-width="1" stroke-dasharray="2 9" opacity=".55"/>' +
+            '<text x="1186" y="'+(y - 4)+'" text-anchor="end" font-size="10.5" fill="#c9a97f" opacity=".85" font-family="system-ui">\u2212'+m+' m</text>';
+  }
+  $('soilLines').innerHTML = soil;
+
+  const ry = H - 24;
+  let rb = '<rect x="0" y="'+ry+'" width="1200" height="24" fill="#0b111c"/>';
+  for (let m = 0; m < 12; m++) {
+    const x0 = 1200 * MONTH_START[m] / 365, w = 1200 * MONTH_LEN[m] / 365;
+    const sn = seasonOf(MONTH_START[m] + 15);
+    rb += '<rect x="'+x0.toFixed(1)+'" y="'+ry+'" width="'+w.toFixed(1)+'" height="24" fill="'+sn.c+'" opacity=".22"/>' +
+      '<text x="'+(x0 + w/2).toFixed(1)+'" y="'+(ry + 16)+'" text-anchor="middle" font-size="11" fill="#8fa3bb" font-family="system-ui">'+MONTH_NAME[m]+'</text>';
+  }
+  rb += '<rect id="ribbonCursor" x="0" y="'+(ry - 2)+'" width="3" height="28" fill="#ffd54f"/>';
+  $('ribbon').innerHTML = rb;
+}
+
+/* ---------- pipes & readouts ---------- */
+let ANCHOR = null;
+// orthogonal route: down from the source, along a run, then in to the target
+const route = (x1, y1, runY, x2, y2) =>
+  'M'+x1.toFixed(1)+' '+y1.toFixed(1)+' L'+x1.toFixed(1)+' '+runY.toFixed(1)+
+  ' L'+x2.toFixed(1)+' '+runY.toFixed(1)+' L'+x2.toFixed(1)+' '+y2.toFixed(1);
+
+function buildPipes() {
+  const a = ANCHOR;
+  const p = arrayPlacement(cfg.tilt);
+  const colOut = { x: p.ax - 6, y: p.ay + 6 };          // low end of the array
+  const floorIn = { x: HX.left + 26, y: GY - 8 };       // into the underfloor circuit
+  let solarFlow, solarRet, loadFlow;
+
+  if (a.indoor) {
+    // everything is inside the house: straight down the gable wall into the tank
+    solarFlow = route(colOut.x, colOut.y, HX.eave + 46, a.inX, a.inY);
+    solarRet  = route(colOut.x - 16, colOut.y + 12, HX.eave + 64, a.inX - 26, a.botY - 10);
+    loadFlow  = route(a.outX, a.outY, GY - 30, floorIn.x, floorIn.y);
+  } else {
+    const trench = clamp(a.inY - 26, GY + 16, GY + 62);
+    solarFlow = route(colOut.x, colOut.y, trench, a.inX, a.inY);
+    solarRet  = route(colOut.x - 18, colOut.y + 12, trench + 17, a.inX - 26, a.botY - 8);
+    loadFlow  = route(a.outX, a.outY, trench + 34, floorIn.x, floorIn.y);
+  }
+
+  const casing = d => '<path d="'+d+'" stroke="#2b3746" stroke-width="11" stroke-linejoin="round"/>';
+  $('pipes').innerHTML =
+    casing(solarFlow) + casing(solarRet) + casing(loadFlow) +
+    '<path id="pSolarF" d="'+solarFlow+'" stroke="#ff7043" stroke-width="5" stroke-dasharray="13 11" opacity=".25"/>' +
+    '<path id="pSolarR" d="'+solarRet+'" stroke="#4fc3f7" stroke-width="5" stroke-dasharray="13 11" opacity=".25"/>' +
+    '<path id="pLoad"   d="'+loadFlow+'" stroke="#ffb74d" stroke-width="5" stroke-dasharray="13 11" opacity=".25"/>';
+}
+
+function buildReadouts() {
+  const badge = (id, x, y, title, w) => {
+    const W = w || 168;
+    return '<g id="'+id+'" transform="translate('+x+','+y+')">' +
+      '<rect x="0" y="0" width="'+W+'" height="52" rx="11" fill="#0b111c" fill-opacity=".78" stroke="#3a4a60" stroke-width="1.2"/>' +
+      '<text x="12" y="19" font-size="11.5" fill="#8fa3bb" font-family="system-ui" letter-spacing=".04em">'+title+'</text>' +
+      '<text class="val" x="12" y="41" font-size="21" font-weight="650" fill="#fff" font-family="system-ui" style="font-variant-numeric:tabular-nums"></text>' +
+      '<circle class="dot" cx="'+(W-18)+'" cy="30" r="8" fill="#666"/></g>';
+  };
+  $('readouts').innerHTML =
+    badge('roAmb', 22, 22, 'OUTDOOR AIR') +
+    badge('roStore', 22, 84, 'STORE') +
+    badge('roHouse', 22, 146, 'INDOORS') +
+    '<g id="roSeason" transform="translate(22,208)">' +
+      '<rect x="0" y="0" width="168" height="42" rx="11" fill="#0b111c" fill-opacity=".78" stroke="#3a4a60" stroke-width="1.2"/>' +
+      '<text class="val" x="12" y="27" font-size="16" font-weight="600" fill="#ffd54f" font-family="system-ui"></text></g>' +
+    '<g id="roPower" transform="translate(22,262)">' +
+      '<rect x="0" y="0" width="238" height="96" rx="11" fill="#0b111c" fill-opacity=".78" stroke="#3a4a60" stroke-width="1.2"/>' +
+      '<text x="12" y="20" font-size="11.5" fill="#8fa3bb" font-family="system-ui">TODAY</text>' +
+      '<text id="pwCol" x="12" y="42" font-size="13" fill="#ffb74d" font-family="system-ui"></text>' +
+      '<text id="pwUse" x="12" y="62" font-size="13" fill="#ff7043" font-family="system-ui"></text>' +
+      '<text id="pwBk"  x="12" y="82" font-size="13" fill="#9fa8da" font-family="system-ui"></text></g>';
+}
+
+/* ---------- scene assembly ---------- */
+function rebuildScene() {
+  applySceneHeight();
+  $('houseArt').innerHTML = houseArt(cfg.tilt, STORAGES[cfg.storage].indoor);
+
+  // collector array, mounted at the true tilt on the south roof slope
+  const p = arrayPlacement(cfg.tilt);
+  const boxH = 40, boxW = Math.max(80, p.len - 46);
+  const t = cfg.tilt * D2R, pr = p.pitch * D2R;
+  // struts between the array's underside and the roof plane, when the array is the steeper of the two
+  let struts = '';
+  if (cfg.tilt > p.pitch + 1.5) {
+    for (let i = 0; i <= 3; i++) {
+      const L = 30 + (p.len - 46) * i / 3.2;
+      struts += '<path d="M'+(L*Math.cos(t)).toFixed(1)+' '+(-L*Math.sin(t)).toFixed(1) +
+                ' L'+(L*Math.cos(pr)).toFixed(1)+' '+(-L*Math.sin(pr)).toFixed(1)+'" stroke="#8b98a8" stroke-width="3.4"/>';
+    }
+  }
+  const midX = p.ax + Math.cos(t) * p.len * 0.5 - Math.sin(t) * 44;
+  const midY = p.ay - Math.sin(t) * p.len * 0.5 - Math.cos(t) * 44;
+  $('colArt').innerHTML =
+    '<g transform="translate('+p.ax.toFixed(1)+','+p.ay.toFixed(1)+')">' + struts +
+      '<g transform="rotate('+p.angle.toFixed(2)+') translate(30,-'+(boxH + 3)+')">' +
+        collectorArt(cfg.collector, boxW, boxH) + '</g></g>' +
+    '<text x="'+midX.toFixed(1)+'" y="'+midY.toFixed(1)+'" text-anchor="end" font-size="13" font-weight="600" ' +
+      'fill="#ffffff" font-family="system-ui" style="paint-order:stroke;stroke:#0b111c;stroke-width:4px">' +
+      esc(COLLECTORS[cfg.collector].short) + ' · ' + cfg.collArea + ' m² · ' + cfg.tilt + '°</text>';
+
+  const sa = storageArt(cfg.storage, cfg.storeVolume);
+  ANCHOR = sa.anchor;
+  $('storeArt').innerHTML = sa.svg;
+  $('storeLabelLayer').innerHTML =
+    '<g id="storeLabel" transform="translate('+sa.label.x.toFixed(1)+','+sa.label.y.toFixed(1)+')">' +
+      '<text text-anchor="middle" y="-4" font-size="15" font-weight="650" fill="#ffffff" font-family="system-ui" ' +
+        'style="paint-order:stroke;stroke:#0b111c;stroke-width:4.5px">' + fmt(cfg.storeVolume) + ' m³</text>' +
+      '<text text-anchor="middle" y="15" font-size="11.5" fill="#e8f0fa" font-family="system-ui" ' +
+        'style="paint-order:stroke;stroke:#0b111c;stroke-width:4.5px">' + esc(STORAGES[cfg.storage].short) + '</text>' +
+    '</g>';
+  buildPipes();
+}
+
+/* ---------- per-frame animation ---------- */
+let dayF = 0, playing = true, speed = 22, lastTs = 0, dashPhase = 0;
+const cloudEls = () => Array.prototype.slice.call(document.querySelectorAll('#clouds .cloud'));
+const flakeEls = () => Array.prototype.slice.call(document.querySelectorAll('#snowfall .flake'));
+let CLOUDS = [], FLAKES = [], UFH = [], TREES = [];
+
+function cacheEls() {
+  CLOUDS = cloudEls(); FLAKES = flakeEls();
+  UFH = Array.prototype.slice.call(document.querySelectorAll('.ufh'));
+  TREES = Array.prototype.slice.call(document.querySelectorAll('.tree .crown'));
+}
+
+function setBadge(id, text, color) {
+  const g = $(id);
+  if (!g) return;
+  g.querySelector('.val').textContent = text;
+  const dot = g.querySelector('.dot');
+  if (dot && color) dot.setAttribute('fill', color);
+}
+
+function paint(t) {
+  const days = sim.days;
+  const i0 = Math.floor(dayF) % 365, i1 = (i0 + 1) % 365, f = dayF - Math.floor(dayF);
+  const a = days[i0], b = days[i1];
+  const lerp = (k) => a[k] + (b[k] - a[k]) * f;
+  const tAmb = lerp('tAmb'), tStore = lerp('tStore'), tHouse = lerp('tHouse');
+  const snow = lerp('snow'), kt = lerp('kt'), hT = lerp('hT');
+  const st = STORAGES[cfg.storage];
+
+  /* sky */
+  const summer = (1 + Math.cos(TAU * (i0 - 172) / 365)) / 2;   // 1 = midsummer
+  const cloud = clamp((1.05 - kt) / 0.9, 0, 1);
+  $('skyTop').setAttribute('stop-color', mixHex(mixHex('#12325c', '#1d63b8', summer), '#59677a', cloud * 0.75));
+  $('skyMid').setAttribute('stop-color', mixHex(mixHex('#4a7fae', '#69b0e4', summer), '#8d99a8', cloud * 0.72));
+  $('skyBot').setAttribute('stop-color', mixHex(mixHex('#b9cfdd', '#d6ecf7', summer), '#c3ccd6', cloud * 0.6));
+  $('stars').setAttribute('opacity', (0.34 * (1 - summer) * (1 - cloud)).toFixed(3));
+
+  /* sun */
+  const elev = noonAltitude(i0, PHI);
+  const apexY = GY - 348 * Math.sin(elev * D2R) - 24;
+  $('sunPath').setAttribute('d', 'M40 ' + GY + ' Q450 ' + (2 * apexY - GY) + ' 860 ' + GY);
+  $('sunGrp').setAttribute('transform', 'translate(450,' + apexY.toFixed(1) + ')');
+  $('sunDisc').setAttribute('r', (19 + 6 * summer).toFixed(1));
+  $('sunHalo').setAttribute('opacity', (0.35 + 0.65 * (1 - cloud)).toFixed(2));
+  $('sunDisc').setAttribute('fill', mixHex('#ffe9a8', '#ffc93c', summer));
+
+  /* clouds drift */
+  for (let i = 0; i < CLOUDS.length; i++) {
+    const el = CLOUDS[i];
+    const x0 = +el.dataset.x, s = +el.dataset.s;
+    const x = ((x0 + t * (10 + i * 4)) % 1400) - 100;
+    el.setAttribute('transform', 'translate(' + x.toFixed(1) + ',' + (30 + i * 26) + ') scale(' + s + ')');
+    el.setAttribute('opacity', (0.12 + 0.78 * cloud).toFixed(3));
+  }
+
+  /* ground, snow, trees */
+  const grassCol = summer > 0.55 ? mixHex('#5c9a44', '#3f7a34', (summer - 0.55) / 0.45)
+                                 : mixHex('#7d7a3e', '#5c9a44', summer / 0.55);
+  $('grass').setAttribute('fill', grassCol);
+  const snowOp = clamp(snow / 6, 0, 1);
+  $('snowLayer').setAttribute('opacity', snowOp.toFixed(3));
+  const rs = $('roofSnow'); if (rs) rs.setAttribute('opacity', (snowOp * 0.95).toFixed(3));
+  // leaf colour: bare in winter, green in summer, gold in autumn
+  const leaf = i0 < 95  ? { c:'#6b4b3a', o:0.0 }
+             : i0 < 135 ? { c:'#8fce6d', o:(i0-95)/40 }
+             : i0 < 250 ? { c:'#3f8f3a', o:1 }
+             : i0 < 300 ? { c:mixHex('#3f8f3a','#d98a2b',(i0-250)/50), o:1 }
+             : i0 < 330 ? { c:'#b5641f', o:1-(i0-300)/30 } : { c:'#6b4b3a', o:0 };
+  for (let i = 0; i < TREES.length; i++) { TREES[i].setAttribute('fill', leaf.c); TREES[i].setAttribute('opacity', leaf.o.toFixed(2)); }
+
+  /* snowfall */
+  const falling = (tAmb < 1.5 && cloud > 0.45) ? 1 : 0;
+  for (let i = 0; i < FLAKES.length; i++) {
+    const el = FLAKES[i];
+    if (!falling) { el.setAttribute('opacity', '0'); continue; }
+    const p = +el.dataset.p, rr = +el.dataset.r;
+    const y = ((t * (26 + rr * 16) + p * 900) % 470);
+    el.setAttribute('cx', (+el.dataset.x + Math.sin((t + p * 9) * 1.2) * 16).toFixed(1));
+    el.setAttribute('cy', y.toFixed(1));
+    el.setAttribute('r', rr.toFixed(1));
+    el.setAttribute('opacity', '0.85');
+  }
+
+  /* store fill colour + stratification */
+  const fill = $('storeFill');
+  if (fill) {
+    const strat = st.pcmT ? 3 : (st.buried ? 5 : 9);
+    $('stTop').setAttribute('stop-color', tempColor(tStore + strat));
+    $('stBot').setAttribute('stop-color', tempColor(tStore - strat));
+  }
+  $('storeLabel').querySelector('text').textContent = fmt(cfg.storeVolume) + ' m³ · ' + tStore.toFixed(0) + ' °C';
+
+  /* house warmth */
+  $('roomGlow').setAttribute('opacity', clamp((tHouse - 14) / 9, 0, 1).toFixed(3));
+  const heating = a.sh / 4 > 0.02;
+  for (let i = 0; i < UFH.length; i++) {
+    const on = heating ? 0.55 + 0.45 * Math.sin(t * 3 - i * 0.5) : 0.12;
+    UFH[i].setAttribute('opacity', on.toFixed(2));
+    UFH[i].setAttribute('fill', heating ? tempColor(clamp(25 + 0.55 * (20 - tAmb), 25, 40)) : '#7a4a44');
+  }
+
+  /* pipe flow */
+  const charging = a.col > 0.4, discharging = (a.sh + a.dhw) > 0.4 && a.solar > 0.2;
+  dashPhase -= (charging ? 26 + Math.min(60, a.col * 1.7) : 0) * 0.016;
+  const loadPhase = -t * (discharging ? 40 + Math.min(60, a.solar * 3) : 0);
+  const sf = $('pSolarF'), sr = $('pSolarR'), pl = $('pLoad');
+  if (sf) {
+    sf.setAttribute('opacity', charging ? '0.95' : '0.18');
+    sr.setAttribute('opacity', charging ? '0.8' : '0.15');
+    sf.setAttribute('stroke-dashoffset', dashPhase.toFixed(1));
+    sr.setAttribute('stroke-dashoffset', (-dashPhase).toFixed(1));
+    sf.setAttribute('stroke', tempColor(Math.max(tStore + 8, tAmb)));
+    pl.setAttribute('opacity', discharging ? '0.95' : '0.16');
+    pl.setAttribute('stroke-dashoffset', loadPhase.toFixed(1));
+    pl.setAttribute('stroke', tempColor(tStore));
+  }
+
+  /* readouts */
+  setBadge('roAmb', tAmb.toFixed(1) + ' °C', tempColor(tAmb));
+  setBadge('roStore', tStore.toFixed(0) + ' °C', tempColor(tStore));
+  setBadge('roHouse', tHouse.toFixed(1) + ' °C', tempColor(tHouse));
+  const s = seasonOf(i0);
+  $('roSeason').querySelector('.val').textContent = s.n + ' · ' + dateLabel(i0);
+  $('roSeason').querySelector('.val').setAttribute('fill', s.c);
+  $('pwCol').textContent = 'collected  ' + a.col.toFixed(1) + ' kWh' + (a.stag > 0.5 ? '  (+' + a.stag.toFixed(0) + ' dumped)' : '');
+  $('pwUse').textContent = 'from store ' + a.solar.toFixed(1) + ' kWh';
+  $('pwBk').textContent  = cfg.backup === 'none'
+    ? (a.unmet > 0.3 ? 'shortfall  ' + a.unmet.toFixed(1) + ' kWh' : 'demand fully covered')
+    : 'backup     ' + (a.backup + a.elec).toFixed(1) + ' kWh';
+
+  /* ribbon + scrubber */
+  $('ribbonCursor').setAttribute('x', (1200 * dayF / 365).toFixed(1));
+  $('dateLbl').textContent = dateLabel(i0) + ' · ' + s.n;
+  const rd = $('rDay');
+  if (document.activeElement !== rd) rd.value = String(i0);
+  drawTempChart(i0);
+}
+
+function tick(ts) {
+  if (!lastTs) lastTs = ts;
+  const dt = Math.min(0.12, (ts - lastTs) / 1000);
+  lastTs = ts;
+  if (playing) dayF = (dayF + dt * speed) % 365;
+  paint(ts / 1000);
+  requestAnimationFrame(tick);
+}
+
+/* ---------- charts ---------- */
+function fitCanvas(cv) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const r = cv.getBoundingClientRect();
+  cv.width = Math.max(320, Math.round(r.width * dpr));
+  cv.height = Math.round(214 * dpr);
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx: ctx, w: cv.width / dpr, h: 214 };
+}
+function axisFrame(ctx, w, h, pad, yLo, yHi, unit) {
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = '#223049'; ctx.lineWidth = 1;
+  ctx.fillStyle = '#6d809b'; ctx.font = '10px system-ui';
+  const steps = 5;
+  for (let i = 0; i <= steps; i++) {
+    const y = pad.t + (h - pad.t - pad.b) * i / steps;
+    const v = yHi - (yHi - yLo) * i / steps;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+    ctx.textAlign = 'right'; ctx.fillText(Math.round(v) + unit, pad.l - 5, y + 3);
+  }
+  ctx.textAlign = 'center';
+  for (let m = 0; m < 12; m++) {
+    const x = pad.l + (w - pad.l - pad.r) * (MONTH_START[m] + MONTH_LEN[m] / 2) / 365;
+    ctx.fillText(MONTH_NAME[m][0], x, h - pad.b + 12);
+  }
+}
+function drawTempChart(cursor) {
+  const cv = $('cT'); if (!cv) return;
+  const F = fitCanvas(cv), ctx = F.ctx, w = F.w, h = F.h;
+  const pad = { l: 34, r: 8, t: 10, b: 20 };
+  const days = sim.days;
+  const hi = Math.max(40, Math.ceil(Math.max.apply(null, days.map(d => d.tStore)) / 10) * 10);
+  const lo = Math.min(-10, Math.floor(Math.min.apply(null, days.map(d => d.tAmb)) / 10) * 10);
+  axisFrame(ctx, w, h, pad, lo, hi, '°');
+  const X = d => pad.l + (w - pad.l - pad.r) * d / 365;
+  const Y = v => pad.t + (h - pad.t - pad.b) * (hi - v) / (hi - lo);
+  const line = (key, col, wd) => {
+    ctx.beginPath(); ctx.strokeStyle = col; ctx.lineWidth = wd;
+    for (let i = 0; i < 365; i++) { const x = X(i), y = Y(days[i][key]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.stroke();
+  };
+  // zero line
+  if (lo < 0) { ctx.strokeStyle = '#31465f'; ctx.setLineDash([3,3]); ctx.beginPath();
+    ctx.moveTo(pad.l, Y(0)); ctx.lineTo(w - pad.r, Y(0)); ctx.stroke(); ctx.setLineDash([]); }
+  line('tAmb', '#4fc3f7', 1.2);
+  if (STORAGES[cfg.storage].buried) line('tShell', '#8d6e63', 1.1);
+  line('tHouse', '#66bb6a', 1.4);
+  line('tStore', '#ff7043', 2);
+  // cursor
+  ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(X(cursor), pad.t); ctx.lineTo(X(cursor), h - pad.b); ctx.stroke();
+  ctx.fillStyle = '#ff7043';
+  ctx.beginPath(); ctx.arc(X(cursor), Y(days[cursor].tStore), 3.2, 0, TAU); ctx.fill();
+}
+function drawEnergyChart() {
+  const cv = $('cE'); if (!cv) return;
+  const F = fitCanvas(cv), ctx = F.ctx, w = F.w, h = F.h;
+  const pad = { l: 40, r: 8, t: 10, b: 20 };
+  const m = { col: [], sol: [], bk: [], loss: [] };
+  for (let i = 0; i < 12; i++) { m.col[i] = m.sol[i] = m.bk[i] = m.loss[i] = 0; }
+  for (let d = 0; d < 365; d++) {
+    const k = monthOfDay(d), x = sim.days[d];
+    m.col[k] += x.col; m.sol[k] += x.solar; m.bk[k] += x.backup + x.elec; m.loss[k] += x.loss;
+  }
+  const hi = Math.max.apply(null, m.col.concat(m.sol, m.bk, m.loss)) * 1.12 || 1;
+  axisFrame(ctx, w, h, pad, 0, hi, '');
+  const bw = (w - pad.l - pad.r) / 12;
+  const Y = v => pad.t + (h - pad.t - pad.b) * (1 - v / hi);
+  const series = [['col', '#ffb74d'], ['sol', '#ff7043'], ['bk', '#7986cb'], ['loss', '#455a75']];
+  for (let i = 0; i < 12; i++) {
+    for (let s = 0; s < 4; s++) {
+      const v = m[series[s][0]][i];
+      const x = pad.l + i * bw + 3 + s * (bw - 8) / 4;
+      const y = Y(v);
+      ctx.fillStyle = series[s][1];
+      ctx.fillRect(x, y, (bw - 8) / 4 - 1.2, (h - pad.b) - y);
+    }
+  }
+}
+
+/* ---------- KPI + doc ---------- */
+function renderKPIs() {
+  const a = sim.acc, st = STORAGES[cfg.storage], col = COLLECTORS[cfg.collector];
+  const price = cfg.backup === 'gas' ? 0.09 : 0.20;
+  const bkCost = (cfg.backup === 'gas' ? a.backup / 0.95 : a.backup + a.elec) * price;
+  const card = (k, v, u, d, colr) =>
+    '<div class="kpi"><div class="k">' + k + '</div><div class="v"' + (colr ? ' style="color:' + colr + '"' : '') + '>' +
+    v + (u ? '<span class="u">' + u + '</span>' : '') + '</div><div class="d">' + (d || '') + '</div></div>';
+
+  const sfCol = a.solarFraction > 0.7 ? '#66bb6a' : a.solarFraction > 0.4 ? '#ffb74d' : '#ff7043';
+  let html = '';
+  html += card('Solar fraction', (a.solarFraction * 100).toFixed(0), '%', 'of delivered heat', sfCol);
+  html += card('Collector yield', fmt(a.col), ' kWh/a', fmt(a.yieldPerM2) + ' kWh per m²');
+  html += card('Store swing', a.tMin.toFixed(0) + '–' + a.tMax.toFixed(0), ' °C', 'usable ' + fmt(a.capacity) + ' kWh at ' + st.tMax + ' °C');
+  html += card('Store losses', fmt(a.loss), ' kWh/a', st.indoor ? fmt(a.credit) + ' kWh of it heats the house'
+                                                                : (a.loss / Math.max(1, a.col) * 100).toFixed(0) + '% of what was collected');
+  html += card('Backup energy', fmt(a.backup + a.elec), ' kWh/a',
+    cfg.backup === 'none' ? 'no backup fitted' : cfg.backup === 'hp' ? 'electricity to the heat pump' : '≈ ' + fmt(bkCost) + ' €/a');
+  html += card('Heat demand', a.specDemand.toFixed(1), ' kWh/m²·a', 'class ' + cfg.houseClass + ' limit ' + CLASSES[cfg.houseClass].limit);
+  html += card('Overheat dumped', fmt(a.stag), ' kWh/a', a.stag > a.col * 0.15 ? 'store too small for this field' : 'stagnation losses');
+  html += card('Comfort', a.cold === 0 ? 'OK' : a.cold + ' d', a.cold === 0 ? '' : '', a.cold === 0 ? 'never below 19 °C indoors' : 'days below 19 °C indoors',
+    a.cold === 0 ? '#66bb6a' : '#ff7043');
+  html += card('Investment', fmt(a.capex / 1000, 1), ' k€', 'collectors + store, installed');
+  if (col.pvEff) html += card('PV electricity', fmt(a.pv), ' kWh/a', 'bonus from the hybrid panel');
+  $('kpis').innerHTML = html;
+
+  // advisory
+  const wEl = $('warn');
+  let msg = '', ok = false;
+  if (a.loss > a.col * 0.6)
+    msg = '⚠️ The store loses ' + (a.loss / a.col * 100).toFixed(0) + '% of everything it receives. ' +
+          (st.buried ? 'Uninsulated ground stores only work at community scale — the surface-to-volume ratio has to fall. Try a far larger volume, or an insulated tank.' : 'Reduce the volume or improve the insulation.');
+  else if (a.stag > a.col * 0.25)
+    msg = '⚠️ ' + (a.stag / a.col * 100).toFixed(0) + '% of the potential yield is dumped in summer because the store is already at ' +
+          st.tMax + ' °C. Enlarge the store or shrink the collector field.';
+  else if (cfg.backup === 'none' && a.cold > 0)
+    msg = '🥶 With no backup the house drops below 19 °C on ' + a.cold + ' days, bottoming out at ' +
+          Math.min.apply(null, sim.days.map(d => d.tHouse)).toFixed(1) + ' °C.';
+  else if (a.solarFraction > 0.95) { ok = true; msg = '✅ Essentially a fully solar-heated house — the store carries the entire winter.'; }
+  else if (a.solarFraction > 0.6) { ok = true; msg = '✅ A realistic seasonal system: the store covers most of the winter and the backup fills the gaps.'; }
+  wEl.className = 'warn' + (ok ? ' ok' : '');
+  wEl.textContent = msg;
+}
+
+function renderDoc() {
+  const a = sim.acc, st = STORAGES[cfg.storage], col = COLLECTORS[cfg.collector];
+  const yTilt = a.tilt;
+  $('docBody').innerHTML =
+  '<h3>Where the weather comes from</h3>' +
+  '<p>A synthetic year is generated for Bratislava (48.15 °N, 17.11 °E). Correlated day-to-day anomalies give ' +
+  'realistic runs of cloud and cold snaps, then every month is pinned back onto the published 1991–2020 normals, ' +
+  'so the annual mean air temperature is exactly 10.9 °C and the global horizontal irradiation exactly 1 182 kWh/m². ' +
+  'Clear winter days are made colder than overcast ones, and lying snow both brightens the ground ' +
+  '(albedo 0.2 → 0.6) and shades a shallow collector.</p>' +
+  '<p>Daily horizontal irradiation is split into beam and diffuse with the <b>Erbs</b> correlation and projected onto the ' +
+  'collector plane with the <b>HDKR</b> anisotropic-sky model, so tilt genuinely matters: at ' + cfg.tilt + '° the field ' +
+  'receives <b>' + fmt(yTilt) + ' kWh/m²·a</b> against 1 182 on the flat. Sun geometry (declination, sunset hour angle, ' +
+  'day length ' + dayLength(354, PHI).toFixed(1) + ' h in December to ' + dayLength(171, PHI).toFixed(1) + ' h in June) is computed, not tabulated.</p>' +
+
+  '<h3>Collector</h3>' +
+  '<p>Standard EN ISO 9806 efficiency curve on aperture area:</p>' +
+  '<p><code>η = η₀ − a₁·ΔT/G − a₂·ΔT²/G</code></p>' +
+  '<p>with ΔT the mean collector temperature above ambient and G the mean irradiance while the pump runs. ' +
+  'The selected ' + esc(col.name) + ' uses η₀ = ' + col.eta0 + ', a₁ = ' + col.a1 + ' W/m²K, a₂ = ' + col.a2 + ' W/m²K². ' +
+  'A further 7 % comes off for pipework, heat exchanger and pump. Above the stagnation temperature (' + col.tStag + ' °C) ' +
+  'or once the store is full, the yield is dumped rather than collected.</p>' +
+
+  '<h3>Store</h3>' +
+  '<p>A single well-mixed node. Envelope area is taken as <code>A = k·V^(2/3)</code> — the reason big stores win: ' +
+  'surface grows as the square while capacity grows as the cube. Here <b>V = ' + fmt(cfg.storeVolume) + ' m³</b> gives ' +
+  '<b>A ≈ ' + fmt(a.Aenv) + ' m²</b> and <b>UA ≈ ' + a.UAst.toFixed(1) + ' W/K</b> at U = ' + st.u + ' W/m²K.</p>' +
+  '<p>Buried stores also carry a warmed ground shell around them (capacity 0.45·C, conductance 0.55·UA to the far field ' +
+  'at ' + SITE.tGround + ' °C), which is why the simulation runs four consecutive years and reports the fourth — the ' +
+  'ground has to be charged before a pit or borehole store performs.</p>' +
+  (st.pcmT ? '<p>The PCM store adds ' + st.pcmLat + ' kWh/m³ of latent heat across a ' + (2*st.pcmBand) + ' K window at ' +
+    st.pcmT + ' °C, on top of ' + st.cRho + ' kWh/m³K of sensible capacity.</p>' : '') +
+  '<p>An indoor tank is credited with 70 % of its losses, since they warm the house rather than the sky.</p>' +
+
+  '<h3>House</h3>' +
+  '<p>The heat-loss coefficient is not guessed — it is <b>solved</b> so that the EN ISO 13790 monthly reference ' +
+  'calculation returns exactly the demand of the chosen class. For this ' + cfg.floorArea + ' m² class ' + cfg.houseClass +
+  ' house that yields <b>UA = ' + a.UAh.toFixed(0) + ' W/K</b> (' + (a.UAh / cfg.floorArea).toFixed(2) + ' W per m² of floor) ' +
+  'and a space-heating demand of <b>' + a.specDemand.toFixed(1) + ' kWh/(m²·a)</b>, inside the ' + cfg.houseClass +
+  ' limit of ' + CLASSES[cfg.houseClass].limit + ' kWh/(m²·a). ' + esc(CLASSES[cfg.houseClass].note) + '</p>' +
+  '<ul>' +
+  '<li>Internal gains ' + (cfg.occupants * 1.55 + 0.021 * cfg.floorArea).toFixed(1) + ' kWh/day (occupants + appliances).</li>' +
+  '<li>Effective south glazing ' + (0.035 * cfg.floorArea).toFixed(1) + ' m², externally shaded above 17 °C outdoors.</li>' +
+  '<li>Thermal mass ' + (0.09 * cfg.floorArea).toFixed(1) + ' kWh/K — heavy construction, so the house coasts through a cold night.</li>' +
+  '<li>Hot water ' + (cfg.occupants * 40) + ' L/day at ΔT 45 K plus 20 % circulation losses = ' +
+      fmt(cfg.occupants * 40 * 4.186 * 45 / 3600 * 1.2 * 365) + ' kWh/a.</li>' +
+  '<li>Underfloor heating: flow temperature ' + '25–40 °C on a weather curve, so the store stays useful down to ~30 °C.</li>' +
+  '</ul>' +
+
+  '<h3>Reading the result</h3>' +
+  '<p>Hot water is served first (directly above 56 °C, otherwise the store pre-heats the mains and the backup finishes the job), ' +
+  'then space heating. The <b>solar fraction</b> is the share of delivered heat that came out of the store; with a heat pump ' +
+  'selected, the electricity it consumes counts as non-solar and only the heat it lifts out of the store counts as solar.</p>' +
+  '<p>Numbers are engineering estimates for exploring trade-offs, not a design document. A real project needs hourly ' +
+  'simulation (TRNSYS, Polysun), a measured load profile and a ground survey.</p>';
+}
+
+/* ---------- wiring ---------- */
+function volFromSlider(v) {
+  const st = STORAGES[cfg.storage];
+  const lo = Math.log(st.vMin), hi = Math.log(st.vMax);
+  const raw = Math.exp(lo + (hi - lo) * v / 1000);
+  return raw < 20 ? Math.round(raw) : raw < 200 ? Math.round(raw / 5) * 5
+       : raw < 2000 ? Math.round(raw / 25) * 25 : Math.round(raw / 500) * 500;
+}
+function sliderFromVol(vol) {
+  const st = STORAGES[cfg.storage];
+  const lo = Math.log(st.vMin), hi = Math.log(st.vMax);
+  return Math.round(1000 * (Math.log(clamp(vol, st.vMin, st.vMax)) - lo) / (hi - lo));
+}
+
+function recompute(rebuild) {
+  sim = simulate(Object.assign({}, cfg, { weather: WEATHER }));
+  if (rebuild) { rebuildScene(); cacheEls(); }
+  renderKPIs(); renderDoc(); drawEnergyChart();
+  $('badgeClass').textContent = 'Energy class ' + cfg.houseClass + ' · ' + sim.acc.specDemand.toFixed(0) + ' kWh/m²·a';
+}
+
+function syncLabels() {
+  const st = STORAGES[cfg.storage], col = COLLECTORS[cfg.collector];
+  $('vArea').textContent = cfg.collArea;
+  $('vTilt').textContent = cfg.tilt;
+  $('vVol').textContent = fmt(cfg.storeVolume);
+  $('vFloor').textContent = cfg.floorArea;
+  $('vOcc').textContent = cfg.occupants;
+  $('vSpeed').textContent = speed + ' d/s';
+  $('colPreview').innerHTML = '<svg width="86" height="30" viewBox="0 0 96 34">' +
+    '<g transform="translate(2,2)">' + collectorArt(cfg.collector, 92, 30) + '</g></svg>';
+  $('colSpec').innerHTML = '<b style="color:#c9d8ea">' + esc(col.name) + '</b><br>' + esc(col.blurb) +
+    '<br>η₀ ' + col.eta0 + ' · a₁ ' + col.a1 + ' W/m²K · ≈' + col.cost + ' €/m²';
+  $('stoPreview').innerHTML = '<svg width="46" height="42" viewBox="0 0 46 42">' + storageIcon(cfg.storage) + '</svg>';
+  $('stoSpec').innerHTML = '<b style="color:#c9d8ea">' + esc(st.name) + '</b><br>' + esc(st.blurb) +
+    '<br>' + st.cRho + ' kWh/m³K · U ' + st.u + ' W/m²K · max ' + st.tMax + ' °C';
+  $('volNote').textContent = 'Range for this concept: ' + fmt(st.vMin) + '–' + fmt(st.vMax) + ' m³.';
+  $('clsNote').textContent = CLASSES[cfg.houseClass].note;
+  const tOpt = 'A seasonal store rewards annual yield; a winter-only system rewards a steep tilt. Roof pitch follows this slider.';
+  $('tiltNote').textContent = tOpt;
+  $('bkNote').textContent = cfg.backup === 'hp'
+    ? 'The heat pump uses the store itself as its source, falling back to outdoor air once the store drops below 8 °C.'
+    : cfg.backup === 'none' ? 'Nothing but solar. Watch the indoor temperature.'
+    : 'Covers whatever the store cannot supply.';
+  const seg = $('segBk').children;
+  for (let i = 0; i < seg.length; i++) seg[i].setAttribute('aria-pressed', String(seg[i].dataset.v === cfg.backup));
+}
+
+function storageIcon(key) {
+  const st = STORAGES[key];
+  if (key === 'tankIn' || key === 'pcm')
+    return '<rect x="13" y="4" width="20" height="34" rx="4" fill="#d9b47e"/><rect x="16" y="7" width="14" height="28" rx="3" fill="#ff7043"/>' +
+           (key === 'pcm' ? '<circle cx="20" cy="15" r="3" fill="#fff" opacity=".5"/><circle cx="26" cy="24" r="3.4" fill="#fff" opacity=".5"/>' : '');
+  if (key === 'tankBur')
+    return '<rect x="0" y="0" width="46" height="11" fill="#4f8f3f"/><rect x="9" y="14" width="28" height="24" rx="5" fill="#d9b47e"/>' +
+           '<rect x="12" y="17" width="22" height="18" rx="3" fill="#ff7043"/>';
+  if (key === 'ptesW' || key === 'ptesG')
+    return '<rect x="0" y="0" width="46" height="10" fill="#4f8f3f"/>' +
+           '<path d="M2 13 L44 13 L37 37 L9 37 Z" fill="' + (key === 'ptesG' ? '#c96a3d' : '#ff7043') + '"/>' +
+           '<rect x="1" y="10" width="44" height="4" fill="#d9b47e"/>' +
+           (key === 'ptesG' ? '<circle cx="16" cy="22" r="2" fill="#2b2118"/><circle cx="28" cy="28" r="2.2" fill="#2b2118"/><circle cx="23" cy="19" r="1.6" fill="#2b2118"/>' : '');
+  if (key === 'sand')
+    return '<rect x="0" y="0" width="46" height="12" fill="#4f8f3f"/><rect x="4" y="15" width="38" height="22" rx="3" fill="#d9b47e"/>' +
+           '<rect x="7" y="18" width="32" height="16" rx="2" fill="#e08a3c"/><path d="M9 22h28M9 26h28M9 30h28" stroke="#a8481f" stroke-width="1.4"/>';
+  return '<rect x="0" y="0" width="46" height="11" fill="#4f8f3f"/><rect x="3" y="11" width="40" height="27" fill="#4a3a2a"/>' +
+         '<path d="M9 12v25M17 12v25M25 12v25M33 12v25M41 12v25" stroke="#ff7043" stroke-width="2.6"/>';
+}
+
+function buildSelects() {
+  const sc = $('selCol'), ss = $('selSto'), sl = $('selCls');
+  sc.innerHTML = Object.keys(COLLECTORS).map(k => '<option value="' + k + '">' + esc(COLLECTORS[k].short) + '</option>').join('');
+  ss.innerHTML = Object.keys(STORAGES).map(k => '<option value="' + k + '">' + esc(STORAGES[k].short) + '</option>').join('');
+  sl.innerHTML = Object.keys(CLASSES).map(k => '<option value="' + k + '">' + esc(CLASSES[k].name) + '</option>').join('');
+  sc.value = cfg.collector; ss.value = cfg.storage; sl.value = cfg.houseClass;
+}
+
+function bind() {
+  $('selCol').onchange = e => { cfg.collector = e.target.value; syncLabels(); recompute(true); };
+  $('selSto').onchange = e => {
+    cfg.storage = e.target.value;
+    cfg.storeVolume = STORAGES[cfg.storage].vDef;
+    $('rVol').value = String(sliderFromVol(cfg.storeVolume));
+    syncLabels(); recompute(true);
+  };
+  $('selCls').onchange = e => { cfg.houseClass = e.target.value; syncLabels(); recompute(false); };
+  $('rArea').oninput = e => { cfg.collArea = +e.target.value; syncLabels(); recompute(true); };
+  $('rTilt').oninput = e => { cfg.tilt = +e.target.value; syncLabels(); recompute(true); };
+  $('rVol').oninput  = e => { cfg.storeVolume = volFromSlider(+e.target.value); syncLabels(); recompute(true); };
+  $('rFloor').oninput = e => { cfg.floorArea = +e.target.value; syncLabels(); recompute(false); };
+  $('rOcc').oninput  = e => { cfg.occupants = +e.target.value; syncLabels(); recompute(false); };
+  $('segBk').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    cfg.backup = b.dataset.v; syncLabels(); recompute(false);
+  };
+  $('btnPlay').onclick = () => {
+    playing = !playing;
+    $('btnPlay').textContent = playing ? '⏸ Pause' : '▶ Play';
+  };
+  $('rDay').oninput = e => { dayF = +e.target.value; playing = false; $('btnPlay').textContent = '▶ Play'; };
+  $('rSpeed').oninput = e => { speed = +e.target.value; $('vSpeed').textContent = speed + ' d/s'; };
+  $('btnReset').onclick = () => {
+    cfg = Object.assign({}, DEFAULTS);
+    buildSelects(); pushSliders(); syncLabels(); recompute(true);
+  };
+  window.addEventListener('resize', () => { drawEnergyChart(); drawTempChart(Math.floor(dayF)); });
+}
+function pushSliders() {
+  $('rArea').value = String(cfg.collArea);
+  $('rTilt').value = String(cfg.tilt);
+  $('rVol').value = String(sliderFromVol(cfg.storeVolume));
+  $('rFloor').value = String(cfg.floorArea);
+  $('rOcc').value = String(cfg.occupants);
+  $('rSpeed').value = String(speed);
+}
+
+/* ---------- boot ---------- */
+buildSelects();
+pushSliders();
+buildScenery();
+buildReadouts();
+syncLabels();
+recompute(true);
+bind();
+dayF = 150;                     // start in early summer, charging the store
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
